@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>初学者健身训练日志 - 完整版</title>
+    <style>
+        :root {
+            --primary: #1e40af;
+            --secondary: #64748b;
+            --accent: #f59e0b;
+            --bg: #f1f5f9;
+            --white: #ffffff;
+            --border: #e2e8f0;
+        }
+
+        body {
+            font-family: -apple-system, "Noto Sans SC", "Microsoft YaHei", sans-serif;
+            background-color: var(--bg);
+            color: #1e293b;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: -30px auto 40px;
+            padding: 0 15px;
+        }
+
+        .card {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: var(--primary);
+            border-left: 5px solid var(--accent);
+            padding-left: 15px;
+            margin-top: 0;
+        }
+
+        .tag {
+            display: inline-block;
+            background: #dbeafe;
+            color: #1e40af;
+            padding: 2px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        /* 表格样式 */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        th {
+            background-color: #f8fafc;
+            text-align: left;
+            padding: 12px;
+            border-bottom: 2px solid var(--border);
+            font-size: 0.9rem;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+        }
+
+        .pointer {
+            font-size: 0.85rem;
+            color: #64748b;
+            display: block;
+            margin-top: 4px;
+        }
+
+        input[type="text"] {
+            width: 90%;
+            padding: 6px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+        }
+
+        .warmup-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .warmup-item {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+
+        @media (max-width: 600px) {
+            th:nth-child(2), td:nth-child(2) { display: none; } /* 移动端隐藏器材列以节省空间 */
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>初学者健身训练日志</h1>
+    <p>构建力量与柔韧性的简单指南</p>
+</header>
+
+<div class="container">
+    
+    <div class="card">
+        <h2>2.0 基础：必备热身 (10 轮)</h2>
+        <p>每个动作顺畅连接，通过增加血流量来预防受伤。</p>
+        <div class="warmup-grid">
+            <div class="warmup-item"><strong>1. 前屈</strong><br>折叠髋部</div>
+            <div class="warmup-item"><strong>2. 平板支撑</strong><br>保持核心稳定</div>
+            <div class="warmup-item"><strong>3. 上犬式</strong><br>延展脊柱</div>
+            <div class="warmup-item"><strong>4. 下犬式</strong><br>推高臀部成V型</div>
+            <div class="warmup-item"><strong>5. 返回起始</strong><br>缓慢站起</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <span class="tag">ROUTINE 1</span>
+        <h2>核心与臀部基础</h2>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>动作项目</th>
+                        <th>器材</th>
+                        <th>组数/次数</th>
+                        <th>记录 (重量/感受)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>侧抬腿平板支撑<br><span class="pointer">交替双腿，每侧 15-20 次</span></td>
+                        <td>无</td>
+                        <td>4 组 | 15-20 次</td>
+                        <td><input type="text" placeholder="填写..."></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card">
+        <span class="tag">ROUTINE 2</span>
+        <h2>髋部灵活性与控制</h2>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>动作项目</th>
+                        <th>器材</th>
+                        <th>组数/次数</th>
+                        <th>记录 (重量/感受)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>消防栓式踢腿<br><span class="pointer">交替双腿，每侧 15 次</span></td>
+                        <td>无</td>
+                        <td>3 组 | 15 次</td>
+                        <td><input type="text"></td>
+                    </tr>
+                    <tr>
+                        <td>绕环起转 (髋部)<br><span class="pointer">顺时针/逆时针各 15 次</span></td>
+                        <td>无</td>
+                        <td>1 组 | 30 次</td>
+                        <td><input type="text"></td>
+                    </tr>
+                    <tr>
+                        <td>驴踢 (Donkey Kick)<br><span class="pointer">保持足部勾起，每侧 20 次</span></td>
+                        <td>瑜伽垫</td>
+                        <td>3 组 | 20 次</td>
+                        <td><input type="text"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card">
+        <span class="tag">ROUTINE 3</span>
+        <h2>全身爆发力</h2>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>动作项目</th>
+                        <th>器材</th>
+                        <th>组数/次数</th>
+                        <th>记录 (重量/感受)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>高位翻铃 (Hang Clean)</td>
+                        <td>杠铃</td>
+                        <td>3-4 组 | 8 次</td>
+                        <td><input type="text"></td>
+                    </tr>
+                    <tr>
+                        <td>罗马尼亚硬拉 (RDL)</td>
+                        <td>杠铃</td>
+                        <td>3-4 组 | 8 次</td>
+                        <td><input type="text"></td>
+                    </tr>
+                    <tr>
+                        <td>壶铃摆动 (Swing)</td>
+                        <td>壶铃</td>
+                        <td>3-4 组 | 15 次</td>
+                        <td><input type="text"></td>
+                    </tr>
+                    <tr>
+                        <td>负重臀桥 (Hip Thrust)</td>
+                        <td>杠铃/凳</td>
+                        <td>3-4 组 | 12 次</td>
+                        <td><input type="text"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card">
+        <span class="tag">ROUTINE 4</span>
+        <h2>背部与腘绳肌力量</h2>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>动作项目</th>
+                        <th>器材</th>
+                        <th>组数/次数</th>
+                        <th>记录 (重量/感受)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>杠铃硬拉</td>
+                        <td>杠铃</td>
+                        <td>3 组 | 6 次</td>
+                        <td><input type="text"></td>
+                    </tr>
+                    <tr>
+                        <td>杠铃俯身划船</td>
+                        <td>杠铃</td>
+                        <td>3 组 | 6-8 次</td>
+                        <td><input type="text"></td>
+                    </tr>
+                    <tr>
+                        <td>单腿罗马尼亚硬拉</td>
+                        <td>哑铃/壶铃</td>
+                        <td>3 组 | 8 次</td>
+                        <td><input type="text"></td>
+                    </tr>
+                    <tr>
+                        <td>坐姿俯身哑铃反向飞鸟</td>
+                        <td>哑铃/凳</td>
+                        <td>3 组 | 15 次</td>
+                        <td><input type="text"></td>
+                    </tr>
+                    <tr>
+                        <td>弹力带拉分 (Pull-Apart)</td>
+                        <td>弹力带</td>
+                        <td>3 组 | 20 次</td>
+                        <td><input type="text"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card" style="border: 2px solid #3b82f6;">
+        <span class="tag" style="background:#3b82f6; color:white;">ROUTINE 5 (循环训练)</span>
+        <h2>耐力与腹外斜肌</h2>
+        <p><small>* 动作间无休息，整轮结束后休息 60-90 秒，共 3-4 轮</small></p>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>动作项目</th>
+                        <th>器材</th>
+                        <th>次数</th>
+                        <th>完成记录</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>TRX 折刀支撑 (+斜肌收腹)</td>
+                        <td>TRX</td>
+                        <td>15 次 (+15)</td>
+                        <td><input type="text"></td>
+                    </tr>
+                    <tr>
+                        <td>登山者 (Mountain Climber)</td>
+                        <td>无</td>
+                        <td>15 次</td>
+                        <td><input type="text"></td>
+                    </tr>
+                    <tr>
+                        <td>侧平板支撑 + 抬腿</td>
+                        <td>无</td>
+                        <td>15 次</td>
+                        <td><input type="text"></td>
+                    </tr>
+                    <tr>
+                        <td>侧平板动态升降</td>
+                        <td>无</td>
+                        <td>15 次</td>
+                        <td><input type="text"></td>
+                    </tr>
+                    <tr>
+                        <td>悬挂举腿 (Toes to Bar)</td>
+                        <td>单杠</td>
+                        <td>15 次</td>
+                        <td><input type="text"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card">
+        <span class="tag">ROUTINE 6</span>
+        <h2>上肢力量与形体</h2>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>动作项目</th>
+                        <th>器材</th>
+                        <th>组数/次数</th>
+                        <th>记录 (重量/感受)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>哑铃耸肩</td>
+                        <td>哑铃</td>
+                        <td>3 组 | 12 次</td>
+                        <td><input type="text"></td>
+                    </tr>
+                    <tr>
+                        <td>哑铃直立划船</td>
+                        <td>哑铃</td>
+                        <td>3 组 | 12 次</td>
+                        <td><input type="text"></td>
+                    </tr>
+                    <tr>
+                        <td>杠铃弯举</td>
+                        <td>杠铃</td>
+                        <td>3 组 | 12 次</td>
+                        <td><input type="text"></td>
+                    </tr>
+                    <tr>
+                        <td>哑铃 21 响弯举<br><span class="pointer">7下半+7上半+7全范围</span></td>
+                        <td>哑铃</td>
+                        <td>1 组 | 21 次</td>
+                        <td><input type="text"></td>
+                    </tr>
+                    <tr>
+                        <td>负重双杠臂屈伸</td>
+                        <td>负重/双杠</td>
+                        <td>3 组 | 12 次</td>
+                        <td><input type="text"></td>
+                    </tr>
+                    <tr>
+                        <td>杠铃颅骨粉碎者 (仰卧臂屈伸)</td>
+                        <td>杠铃</td>
+                        <td>3 组 | 12 次</td>
+                        <td><input type="text"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card" style="text-align: center; background: #fffbeb;">
+        <h2>4.0 & 5.0 你的成长之路</h2>
+        <p><strong>如何使用：</strong> 打印此页面或在手机上直接填写。关键在于<strong>渐进式超负荷</strong>——当你感觉动作变容易时，请适当增加重量。</p>
+        <p><em>恭喜你迈出了第一步！坚持不懈，你将见证惊人的改变。</em></p>
+    </div>
+
+</div>
+
+<footer>
+    <p>© 2026 我的个人健身日志 | 保持 consistency 是一切的秘诀</p>
+</footer>
+
+</body>
+</html>

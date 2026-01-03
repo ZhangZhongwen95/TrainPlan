@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>THE MANTIS PROTOCOL: 跪姿震荡系统</title>
+    <style>
+        :root {
+            --bg: #080c08;
+            --card-bg: #111a11;
+            --neon-green: #00ff41; /* 神经传导/速度 */
+            --structure-grey: #4a5a4a; /* 核心刚性 */
+            --alert-orange: #ff5e00; /* 动力源 */
+            --text-main: #e0e0e0;
+            --text-muted: #8c9c8c;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding-bottom: 80px;
+        }
+
+        /* 头部 */
+        header {
+            background: linear-gradient(180deg, #0f1f0f 0%, var(--bg) 100%);
+            padding: 40px 20px;
+            border-bottom: 1px solid #222;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            color: var(--neon-green);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 0;
+            text-shadow: 0 0 15px rgba(0, 255, 65, 0.2);
+        }
+
+        .subtitle {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 10px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* 核心原理 */
+        .bio-panel {
+            background: rgba(0, 255, 65, 0.05);
+            border-left: 3px solid var(--neon-green);
+            padding: 15px;
+            margin: 20px auto;
+            max-width: 1000px;
+            border-radius: 0 6px 6px 0;
+            font-size: 0.85rem;
+            line-height: 1.6;
+        }
+
+        /* 筛选器 */
+        .filter-bar {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            padding: 0 15px 15px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background: #0f0f0f;
+            border: 1px solid #333;
+            color: #888;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .filter-btn.active {
+            background: var(--neon-green);
+            color: #000;
+            border-color: var(--neon-green);
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.4);
+        }
+
+        /* 网格 */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+            padding: 15px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #222;
+            transition: transform 0.2s;
+            position: relative;
+        }
+
+        .card:hover { transform: translateY(-4px); border-color: var(--neon-green); }
+
+        .card-header {
+            height: 160px;
+            background: #000;
+            position: relative;
+        }
+
+        .card-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.8;
+            mix-blend-mode: luminosity;
+        }
+
+        .type-tag {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 4px 8px;
+            font-size: 0.65rem;
+            font-weight: bold;
+            color: #000;
+            border-radius: 3px;
+            z-index: 2;
+        }
+
+        .bg-core { background: var(--structure-grey); color: #fff; }
+        .bg-hip { background: var(--alert-orange); }
+        .bg-twitch { background: var(--neon-green); }
+
+        .card-body { padding: 15px; }
+
+        .ex-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+
+        .ex-meta {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .bio-note {
+            font-size: 0.8rem;
+            color: #ccc;
+            line-height: 1.4;
+            background: rgba(255,255,255,0.03);
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        .highlight { color: var(--neon-green); font-weight: bold; }
+
+        /* 完成打钩 */
+        .check-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 24px;
+            height: 24px;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 5;
+            transition: 0.2s;
+        }
+        .card.done .check-btn { background: var(--neon-green); border-color: var(--neon-green); }
+        .card.done { opacity: 0.5; }
+
+        footer {
+            text-align: center;
+            padding: 40px;
+            border-top: 1px solid #222;
+            margin-top: 40px;
+            color: #555;
+            font-size: 0.75rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Mantis Protocol</h1>
+        <div class="subtitle">
+            跪姿/俯卧支撑位：髋关节微距震荡与骨盆流体控制<br>
+            Kneeling Plank Pelvic Oscillation System
+        </div>
+    </header>
+
+    <div class="bio-panel">
+        <strong>⚙️ 运动力学核心 (Biomechanics):</strong><br>
+        在跪姿平板（Kneeling Plank）状态下，大腿骨（股骨）相对固定。要实现10cm的高频前后震荡，必须依赖<strong>下腹部（骨盆后倾/Tuck）</strong>与<strong>臀大肌/腘绳肌（骨盆前推/Drive）</strong>的极速对抗。核心肌群（TVA）必须提供绝对的刚性支撑，防止腰椎产生代偿性摆动。
+    </div>
+
+    <div class="filter-bar">
+        <button class="filter-btn active" onclick="filter('all', this)">全部动作 (30)</button>
+        <button class="filter-btn" onclick="filter('hip', this)">髋部引擎 (动力)</button>
+        <button class="filter-btn" onclick="filter('core', this)">刚性支撑 (架构)</button>
+        <button class="filter-btn" onclick="filter('twitch', this)">微距震荡 (速度)</button>
+    </div>
+
+    <div class="grid" id="grid">
+        <!-- Content injected via JS -->
+    </div>
+
+    <footer>
+        <p>THE MANTIS PROTOCOL v3.0</p>
+        <p>Neuromuscular Control for Kneeling Posture</p>
+    </footer>
+
+    <script>
+        function getPlaceholder(text, type) {
+            let color = 'ffffff';
+            if(type === 'hip') color = 'ff5e00';
+            if(type === 'core') color = '4a5a4a';
+            if(type === 'twitch') color = '00ff41';
+            const txt = text.replace(/ /g, '+');
+            return `https://placehold.co/600x350/0f0f0f/${color}?text=${txt}&font=roboto`;
+        }
+
+        const exercises = [
+            // --- 髋部引擎 (Hip Engine - Drive) ---
+            // 目标：强化跪姿/俯卧姿态下，将骨盆向前/向下推的动力源
+            {
+                name: "跪姿深蹲",
+                en: "Kneeling Squat",
+                type: "hip",
+                equip: "杠铃/史密斯",
+                reps: "4组 x 10次",
+                badge: "专项模拟",
+                bio: "生物力学完美对应动作。切断膝盖以下借力，迫使<span class='highlight'>臀大肌</span>在跪姿下完成全幅度伸展。"
+            },
+            {
+                name: "杠铃臀推",
+                en: "Barbell Hip Thrust",
+                type: "hip",
+                equip: "杠铃",
+                reps: "5组 x 8次",
+                badge: "最大扭矩",
+                bio: "构建髋关节伸展的绝对力量基础。没有强大的臀推力量，微距摆动将缺乏爆发力。"
+            },
+            {
+                name: "绳索跪姿髋屈伸",
+                en: "Cable Kneeling Crunch",
+                type: "hip",
+                equip: "龙门架",
+                reps: "4组 x 15次",
+                badge: "抗阻摆动",
+                bio: "面对龙门架跪姿，利用绳索阻力强化骨盆的前后卷动能力。"
+            },
+            {
+                name: "反向过度伸展",
+                en: "Reverse Hyper",
+                type: "hip",
+                equip: "器械",
+                reps: "3组 x 15次",
+                badge: "后链整合",
+                bio: "固定上半身，摆动下肢。强化下背与臀部的神经连接，提升摆动节律。"
+            },
+            {
+                name: "跪姿单腿后踢",
+                en: "Donkey Kick",
+                type: "hip",
+                equip: "器械/绑腿",
+                reps: "3组 x 15次/侧",
+                badge: "单侧解离",
+                bio: "强化单侧臀大肌的收缩感，训练左右骨盆的独立控制能力。"
+            },
+            {
+                name: "早安式 (跪姿)",
+                en: "Kneeling Good Morning",
+                type: "hip",
+                equip: "杠铃",
+                reps: "3组 x 10次",
+                bio: "强化腘绳肌与臀肌在跪姿下的离心控制，防止腰椎代偿。"
+            },
+            {
+                name: "弹力带髋部推射",
+                en: "Banded Hip Pulse",
+                type: "hip",
+                equip: "弹力带",
+                reps: "4组 x 30秒",
+                badge: "顶峰脉冲",
+                bio: "在髋伸展末端进行高频微动，直接模拟目标动作的力学环境。"
+            },
+            {
+                name: "史密斯跪姿深蹲",
+                en: "Smith Kneeling Squat",
+                type: "hip",
+                equip: "史密斯机",
+                reps: "3组 x 12次",
+                bio: "固定轨迹允许更大负重，专注于骨盆的向前推进力。"
+            },
+            {
+                name: "罗马尼亚硬拉",
+                en: "RDL",
+                type: "hip",
+                equip: "杠铃",
+                reps: "4组 x 8次",
+                bio: "强化整个后链筋膜，为每一次“前推”提供强大的弹性势能。"
+            },
+            {
+                name: "瑞士球挺身",
+                en: "Swiss Ball Hyper",
+                type: "hip",
+                equip: "瑞士球",
+                reps: "3组 x 15次",
+                bio: "在不稳定平面上强化下背部与臀部的微调能力。"
+            },
+
+            // --- 刚性支撑 (Core Chassis - Structure) ---
+            // 目标：建立不可动摇的躯干刚性，确保力量不被腰椎吸收
+            {
+                name: "健腹轮滚出 (跪姿)",
+                en: "Kneeling Ab Wheel",
+                type: "core",
+                equip: "健腹轮",
+                reps: "4组 x 12次",
+                badge: "姿态核心",
+                bio: "在跪姿下建立极强的<span class='highlight'>抗伸展</span>能力，防止在快速摆动中腰椎塌陷。"
+            },
+            {
+                name: "RKC平板支撑",
+                en: "RKC Plank",
+                type: "core",
+                equip: "徒手",
+                reps: "3组 x 45秒",
+                badge: "全身张力",
+                bio: "主动收缩臀部与腹部，建立如钢板般的躯干刚性，这是高频震荡的地基。"
+            },
+            {
+                name: "死虫式",
+                en: "Dead Bug",
+                type: "core",
+                equip: "徒手",
+                reps: "3组 x 12次/侧",
+                badge: "盆骨分离",
+                bio: "训练在四肢活动时，骨盆与腰椎保持绝对锁死的能力。"
+            },
+            {
+                name: "加重平板支撑",
+                en: "Weighted Plank",
+                type: "core",
+                equip: "杠铃片",
+                reps: "3组 x 45秒",
+                bio: "增加核心负荷，模拟在身体承重状态下的脊柱稳定性。"
+            },
+            {
+                name: "瑞士球搅动",
+                en: "Stir the Pot",
+                type: "core",
+                equip: "瑞士球",
+                reps: "3组 x 30秒",
+                bio: "在平板支撑姿态下对抗动态干扰，强化深层腹横肌。"
+            },
+            {
+                name: "龙门架平板划船",
+                en: "Cable Plank Row",
+                type: "core",
+                equip: "龙门架",
+                reps: "3组 x 12次",
+                bio: "三点支撑下的抗旋转训练，确保震荡轨迹不发生侧向偏移。"
+            },
+            {
+                name: "真空腹",
+                en: "Stomach Vacuum",
+                type: "core",
+                equip: "徒手",
+                reps: "4组 x 30秒",
+                badge: "腹内压",
+                bio: "强化腹横肌，增加腹内压（IAP），像气囊一样保护脊柱。"
+            },
+            {
+                name: "身体锯 (Body Saw)",
+                en: "Body Saw",
+                type: "core",
+                equip: "滑盘/TRX",
+                reps: "3组 x 15次",
+                bio: "动态平板支撑。训练在身体重心前后移动时的核心控制力。"
+            },
+            {
+                name: "帕洛夫推举",
+                en: "Pallof Press",
+                type: "core",
+                equip: "龙门架",
+                reps: "3组 x 12次",
+                bio: "抗旋转经典动作，提升核心整体刚性。"
+            },
+            {
+                name: "龙门架跪姿卷腹",
+                en: "Kneeling Cable Crunch",
+                type: "core",
+                equip: "龙门架",
+                reps: "4组 x 15次",
+                badge: "回拉动力",
+                bio: "强化腹直肌，这是骨盆<span class='highlight'>后倾（Tuck）</span>的主要动力源，负责“回拉”动作。"
+            },
+
+            // --- 微距震荡 (Micro-Twitch - Speed) ---
+            // 目标：激活快肌，实现10cm范围内的极速换向
+            {
+                name: "登山者",
+                en: "Mountain Climber",
+                type: "twitch",
+                equip: "徒手",
+                reps: "4组 x 30秒 (冲刺)",
+                badge: "极速屈髋",
+                bio: "俯卧位下的高频髋关节屈伸，训练极速“刹车”与“启动”能力。"
+            },
+            {
+                name: "药球过顶砸墙",
+                en: "Overhead Slam",
+                type: "twitch",
+                equip: "药球",
+                reps: "3组 x 15次",
+                badge: "前侧爆发",
+                bio: "利用腹部爆发力进行快速屈曲，模拟震荡中的“回弹”阶段。"
+            },
+            {
+                name: "壶铃摆动",
+                en: "Kettlebell Swing",
+                type: "twitch",
+                equip: "壶铃",
+                reps: "4组 x 20次",
+                badge: "弹簧效应",
+                bio: "训练髋关节的弹性势能释放，建立毫秒级的换向速度。"
+            },
+            {
+                name: "弹力带跪姿顶髋脉冲",
+                en: "Banded Kneeling Pulse",
+                type: "twitch",
+                equip: "弹力带",
+                reps: "5组 x 30秒",
+                badge: "专项核心",
+                bio: "本计划最核心动作。跪姿，弹力带阻力向后，做10cm微距极速顶髋。"
+            },
+            {
+                name: "战绳 (半蹲姿)",
+                en: "Battle Ropes",
+                type: "twitch",
+                equip: "战绳",
+                reps: "3组 x 30秒",
+                bio: "在半蹲位锁定骨盆，迫使核心在高频干扰下保持绝对稳定。"
+            },
+            {
+                name: "反向卷腹",
+                en: "Reverse Crunch",
+                type: "twitch",
+                equip: "瑜伽垫",
+                reps: "3组 x 20次",
+                bio: "专注于骨盆离开地面的微小位移，训练下腹部的微操能力。"
+            },
+            {
+                name: "TRX 卷腹",
+                en: "TRX Knee Tuck",
+                type: "twitch",
+                equip: "TRX",
+                reps: "3组 x 15次",
+                bio: "悬挂状态下，骨盆高频前后移动的专项训练，消除地面摩擦力干扰。"
+            },
+            {
+                name: "跳箱",
+                en: "Box Jump",
+                type: "twitch",
+                equip: "跳箱",
+                reps: "4组 x 6次",
+                bio: "激活IIb型超快肌纤维，提升神经系统的信号发射频率。"
+            },
+            {
+                name: "凯格尔深蹲 (爆发)",
+                en: "Speed Kegel Squat",
+                type: "twitch",
+                equip: "徒手",
+                reps: "3组 x 20次",
+                bio: "快速深蹲结合盆底肌收缩，训练深层肌肉的反应速度。"
+            },
+            {
+                name: "坐姿器械夹腿 (脉冲)",
+                en: "Adductor Pulse",
+                type: "twitch",
+                equip: "夹腿机",
+                reps: "3组 x 30次",
+                bio: "在顶峰收缩位进行快速微动，强化盆底肌的耐力与控制。"
+            }
+        ];
+
+        function render(filterType) {
+            const grid = document.getElementById('grid');
+            grid.innerHTML = '';
+            
+            exercises.forEach(item => {
+                if(filterType !== 'all' && item.type !== filterType) return;
+
+                let bgClass = 'bg-core';
+                if(item.type === 'hip') bgClass = 'bg-hip';
+                if(item.type === 'twitch') bgClass = 'bg-twitch';
+
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.onclick = () => card.classList.toggle('done');
+
+                card.innerHTML = `
+                    <div class="card-header">
+                        <div class="type-tag ${bgClass}">${item.badge}</div>
+                        <div class="check-btn"></div>
+                        <img src="${getPlaceholder(item.en, item.type)}" class="card-img" loading="lazy">
+                    </div>
+                    <div class="card-body">
+                        <div class="ex-title">${item.name}</div>
+                        <div class="ex-meta">
+                            ${item.equip} • ${item.reps}
+                        </div>
+                        <div class="bio-note"><span class="highlight">⚡ 作用：</span>${item.bio}</div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function filter(type, btn) {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            render(type);
+        }
+
+        // Init
+        render('all');
+
+    </script>
+</body>
+</html>

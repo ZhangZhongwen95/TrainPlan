@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>HEMO-PUMP: 骨盆血液动力冲击系统</title>
+    <style>
+        :root {
+            --bg: #0b0000;
+            --surface: #1a0505;
+            --primary: #ff0000; /* 动脉血红 - 循环/泵感 */
+            --secondary: #6e0000; /* 深层肌红 */
+            --accent: #ff4d4d; /* 高亮 */
+            --text-main: #ffffff;
+            --text-sub: #b3b3b3;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: 'Roboto Condensed', 'Segoe UI', sans-serif;
+            margin: 0;
+            padding-bottom: 80px;
+        }
+
+        /* 头部视觉 */
+        header {
+            background: linear-gradient(180deg, #2b0000 0%, var(--bg) 100%);
+            padding: 40px 20px;
+            border-bottom: 2px solid var(--secondary);
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 0;
+            text-shadow: 0 0 15px rgba(255, 0, 0, 0.4);
+        }
+
+        .subtitle {
+            font-size: 0.85rem;
+            color: var(--text-sub);
+            margin-top: 10px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.6;
+        }
+
+        /* 科学原理栏 */
+        .bio-panel {
+            background: rgba(110, 0, 0, 0.1);
+            border-left: 4px solid var(--primary);
+            padding: 20px;
+            margin: 20px auto;
+            max-width: 1200px;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.9rem;
+        }
+
+        /* 筛选器 */
+        .filter-wrapper {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            padding: 0 15px 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background: #111;
+            border: 1px solid #333;
+            color: #888;
+            padding: 8px 18px;
+            border-radius: 4px;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .filter-btn.active {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
+        }
+
+        /* 网格 */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+            padding: 15px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: var(--surface);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #330000;
+            transition: transform 0.2s;
+            position: relative;
+        }
+
+        .card:hover { transform: translateY(-5px); border-color: var(--primary); }
+
+        .card-header {
+            position: relative;
+            height: 160px;
+            overflow: hidden;
+            background: #000;
+        }
+
+        .card-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.8;
+        }
+
+        .pulse-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 4px 8px;
+            font-size: 0.65rem;
+            font-weight: bold;
+            color: #fff;
+            background: #000;
+            border-radius: 4px;
+            z-index: 2;
+            border-left: 3px solid var(--primary);
+        }
+
+        .card-body { padding: 15px; }
+
+        .ex-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+
+        .ex-meta {
+            font-size: 0.75rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .bio-note {
+            font-size: 0.8rem;
+            color: #ddd;
+            line-height: 1.4;
+            background: rgba(255,255,255,0.05);
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        .highlight { color: var(--primary); font-weight: bold; }
+
+        /* 状态 */
+        .check-box {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 24px;
+            height: 24px;
+            border: 2px solid #fff;
+            border-radius: 4px;
+            cursor: pointer;
+            z-index: 10;
+        }
+        .card.completed .check-box { background: var(--primary); border-color: var(--primary); }
+        .card.completed { opacity: 0.5; filter: grayscale(0.5); }
+
+        footer {
+            text-align: center;
+            padding: 40px;
+            border-top: 1px solid #330000;
+            margin-top: 30px;
+            color: #666;
+            font-size: 0.75rem;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 0, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); }
+        }
+        
+        .pulse-effect {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>HEMO-PUMP System</h1>
+        <div class="subtitle">
+            下肢全维度肌肥大 & 盆底血液动力冲击方案<br>
+            通过极限泵感（The Pump）最大化髂内动脉对泌尿控制肌群的供血效率
+        </div>
+    </header>
+
+    <div class="bio-panel">
+        <strong>🩸 血液动力学原理 (Hemodynamics):</strong><br>
+        本计划通过高强度的<strong>复合动作（Compound Movements）</strong>迫使血液流向骨盆区域，结合<strong>内收肌群（Adductor Complex）</strong>的针对性强化，利用肌筋膜协同作用，物理性增强盆底肌的收缩质量与血管弹性。
+    </div>
+
+    <div class="filter-wrapper">
+        <button class="filter-btn active" onclick="filter('all', this)">全部动作 (30)</button>
+        <button class="filter-btn" onclick="filter('compound', this)">液压核心 (深蹲/硬拉)</button>
+        <button class="filter-btn" onclick="filter('adductor', this)">内收协同 (盆底激活)</button>
+        <button class="filter-btn" onclick="filter('pump', this)">极速循环 (高次泵感)</button>
+    </div>
+
+    <div class="grid" id="grid">
+        <!-- JS Injection -->
+    </div>
+
+    <footer>
+        <p>HEMO-PUMP PROTOCOL v6.0</p>
+        <p>Advanced Circulation & Hypertrophy Integration</p>
+    </footer>
+
+    <script>
+        function getPlaceholder(text, type) {
+            let color = 'ff0000'; // 默认血红
+            if(type === 'adductor') color = 'ff4d4d';
+            if(type === 'compound') color = '800000';
+            const txt = text.replace(/ /g, '+');
+            return `https://placehold.co/600x320/0a0a0a/${color}?text=${txt}&font=roboto`;
+        }
+
+        const exercises = [
+            // --- 复合液压核心 (Compound / Intra-Abdominal Pressure) ---
+            // 目标：建立强大的腹内压，迫使盆底肌被动承压并强化，同时带来全身性血液冲击。
+            {
+                name: "杠铃深蹲",
+                en: "Barbell Squat",
+                type: "compound",
+                equip: "杠铃",
+                reps: "5组 x 8次",
+                badge: "全身冲刷",
+                bio: "腿部是第二心脏。深蹲能最大化<span class='highlight'>腹内压</span>，迫使大量血液涌入骨盆底区域。"
+            },
+            {
+                name: "相扑硬拉",
+                en: "Sumo Deadlift",
+                type: "compound",
+                equip: "杠铃",
+                reps: "4组 x 6次",
+                badge: "内收核心",
+                bio: "宽距站位直接拉动<span class='highlight'>大收肌</span>，通过筋膜链带动盆底肌强力收缩。"
+            },
+            {
+                name: "腿举 (Leg Press)",
+                en: "Leg Press",
+                type: "compound",
+                equip: "倒蹬机",
+                reps: "4组 x 12次",
+                bio: "大重量、高安全性的泵血动作。下放时充分拉伸臀部与盆底，蹬起时强力压缩。"
+            },
+            {
+                name: "哈克深蹲",
+                en: "Hack Squat",
+                type: "compound",
+                equip: "哈克机",
+                reps: "3组 x 10次",
+                bio: "固定轨迹允许更大的负重，专注于股四头肌，增加下肢整体<span class='highlight'>血流量</span>。"
+            },
+            {
+                name: "六角杠铃硬拉",
+                en: "Trap Bar Deadlift",
+                type: "compound",
+                equip: "六角杠铃",
+                reps: "4组 x 8次",
+                bio: "中立握法减少腰椎压力，允许更大负重，极大提升下肢血液循环速度。"
+            },
+            {
+                name: "泽奇深蹲",
+                en: "Zercher Squat",
+                type: "compound",
+                equip: "杠铃",
+                reps: "3组 x 8次",
+                bio: "前置负重迫使核心极度收紧，最大化腹腔压力，间接锻炼盆底承托力。"
+            },
+            {
+                name: "前蹲",
+                en: "Front Squat",
+                type: "compound",
+                equip: "杠铃",
+                reps: "3组 x 8次",
+                bio: "垂直脊柱姿态，深度下蹲刺激骨盆底部的血液流动与肌肉拉伸。"
+            },
+            {
+                name: "负重弓步走",
+                en: "Walking Lunge",
+                type: "compound",
+                equip: "哑铃",
+                reps: "3组 x 20米",
+                bio: "动态单腿训练，强制血液在双腿间快速交替流动，消除循环死角。"
+            },
+            {
+                name: "箱式深蹲",
+                en: "Box Squat",
+                type: "compound",
+                equip: "箱子/杠铃",
+                reps: "3组 x 5次",
+                bio: "打破粘滞点，爆发性起立瞬间带来强大的血流冲击。"
+            },
+            {
+                name: "早安式",
+                en: "Good Morning",
+                type: "compound",
+                equip: "杠铃",
+                reps: "3组 x 10次",
+                bio: "强化后链（腘绳肌/竖脊肌），为盆底提供稳固的后侧支撑。"
+            },
+
+            // --- 内收协同 (Adductor & Pelvic Synergy) ---
+            // 目标：利用内收肌与盆底肌的神经/筋膜连接，直接强化泌尿控制肌。
+            {
+                name: "坐姿器械夹腿",
+                en: "Adductor Machine",
+                type: "adductor",
+                equip: "夹腿机",
+                reps: "5组 x 15次",
+                badge: "直接激活",
+                bio: "专项动作。<span class='highlight'>内收肌群</span>收缩直接通过闭孔筋膜激活盆底肌，促进局部微循环。"
+            },
+            {
+                name: "相扑高脚杯深蹲",
+                en: "Sumo Goblet Squat",
+                type: "adductor",
+                equip: "哑铃",
+                reps: "4组 x 12次",
+                badge: "深度拉伸",
+                bio: "深度屈髋配合宽距，在底部最大程度拉伸并充血盆底区域。"
+            },
+            {
+                name: "哥萨克深蹲",
+                en: "Cossack Squat",
+                type: "adductor",
+                equip: "徒手/壶铃",
+                reps: "3组 x 10次/侧",
+                badge: "侧向流动",
+                bio: "全幅度拉伸内收肌，改善腹股沟区域的柔韧性与血液通透性。"
+            },
+            {
+                name: "宽距腿举",
+                en: "Wide Leg Press",
+                type: "adductor",
+                equip: "倒蹬机",
+                reps: "4组 x 15次",
+                badge: "内侧充血",
+                bio: "宽足位将压力集中在大腿内侧，迫使血液流向会阴区域。"
+            },
+            {
+                name: "滑盘侧向箭步蹲",
+                en: "Slider Lateral Lunge",
+                type: "adductor",
+                equip: "滑盘",
+                reps: "3组 x 12次",
+                badge: "离心控制",
+                bio: "在离心阶段强化内收肌控制力，提升盆底肌的弹性。"
+            },
+            {
+                name: "凯格尔深蹲",
+                en: "Kegel Squat",
+                type: "adductor",
+                equip: "徒手/哑铃",
+                reps: "3组 x 15次",
+                badge: "意识连接",
+                bio: "站起时主动收缩PC肌。将<span class='highlight'>意识控制</span>融入大肌群运动。"
+            },
+            {
+                name: "瑜伽球夹腿臀桥",
+                en: "Ball Squeeze Bridge",
+                type: "adductor",
+                equip: "瑜伽球",
+                reps: "4组 x 15次",
+                badge: "双重收缩",
+                bio: "同时收缩臀大肌与内收肌，对骨盆底形成前后夹击的充血效果。"
+            },
+            {
+                name: "交叉箭步蹲",
+                en: "Curtsy Lunge",
+                type: "adductor",
+                equip: "哑铃",
+                reps: "3组 x 12次/侧",
+                badge: "旋向挤压",
+                bio: "增加髋外旋与内收的复合运动，挤压骨盆深层血管。"
+            },
+
+            // --- 极速循环与泵感 (Pump & Circulation) ---
+            // 目标：高次数、持续张力，最大化静脉回流与动脉供血。
+            {
+                name: "壶铃摆动",
+                en: "Kettlebell Swing",
+                type: "pump",
+                equip: "壶铃",
+                reps: "4组 x 25次",
+                badge: "心率提升",
+                bio: "利用离心力加速血液循环，像泵一样将血液压入骨盆。"
+            },
+            {
+                name: "坐姿腿屈伸",
+                en: "Leg Extension",
+                type: "pump",
+                equip: "器械",
+                reps: "3组 x 20次",
+                badge: "股四充血",
+                bio: "孤立股四头肌，通过大腿前侧的巨大泵感提升下肢整体血容量。"
+            },
+            {
+                name: "俯卧腿弯举",
+                en: "Lying Leg Curl",
+                type: "pump",
+                equip: "器械",
+                reps: "3组 x 15次",
+                badge: "后链泵感",
+                bio: "强化腘绳肌，平衡大腿前后侧血流，稳定骨盆位置。"
+            },
+            {
+                name: "站姿提踵",
+                en: "Calf Raise",
+                type: "pump",
+                equip: "机器/哑铃",
+                reps: "5组 x 20次",
+                badge: "静脉泵",
+                bio: "小腿是人体的静脉泵。强力提踵加速<span class='highlight'>静脉回流</span>，防止骨盆淤血。"
+            },
+            {
+                name: "臀推 (Hip Thrust)",
+                en: "Hip Thrust",
+                type: "pump",
+                equip: "杠铃",
+                reps: "4组 x 12次",
+                badge: "臀肌泵感",
+                bio: "顶峰收缩时最大化臀部充血，临近的盆底肌共享极高的血流量。"
+            },
+            {
+                name: "绳索胯下穿透",
+                en: "Cable Pull Through",
+                type: "pump",
+                equip: "龙门架",
+                reps: "3组 x 20次",
+                badge: "持续张力",
+                bio: "全程保持后链紧张，促进深层血管扩张。"
+            },
+            {
+                name: "保加利亚分腿蹲",
+                en: "Bulgarian Split Squat",
+                type: "pump",
+                equip: "哑铃",
+                reps: "3组 x 12次/侧",
+                badge: "单侧冲刷",
+                bio: "极高强度的单腿训练，迫使身体调动所有资源向单侧肢体供血。"
+            },
+            {
+                name: "雪橇车推行",
+                en: "Sled Push",
+                type: "pump",
+                equip: "雪橇车",
+                reps: "4组 x 30米",
+                badge: "代谢压力",
+                bio: "全身性代谢训练，极大提升心率与全身血液循环速度。"
+            },
+            {
+                name: "跳箱",
+                en: "Box Jump",
+                type: "pump",
+                equip: "跳箱",
+                reps: "3组 x 10次",
+                badge: "爆发激活",
+                bio: "爆发性动作激活快肌纤维，瞬间提升神经募集与局部供血。"
+            },
+            {
+                name: "坐姿器械外展",
+                en: "Abductor Machine",
+                type: "pump",
+                equip: "外展机",
+                reps: "3组 x 20次",
+                badge: "侧向稳定",
+                bio: "虽然重点在外侧，但与夹腿超级组（Superset）使用可制造极致的骨盆充血感。"
+            },
+            {
+                name: "罗马椅挺身",
+                en: "Back Extension",
+                type: "pump",
+                equip: "罗马椅",
+                reps: "3组 x 20次",
+                badge: "下背循环",
+                bio: "改善腰骶区域血液循环，这里是盆底神经的发出点。"
+            },
+            {
+                name: "悬挂举腿",
+                en: "Hanging Leg Raise",
+                type: "pump",
+                equip: "单杠",
+                reps: "3组 x 15次",
+                badge: "下腹充血",
+                bio: "挤压下腹部，机械性压迫盆腔血管，松开后带来新鲜血液回流（虹吸效应）。"
+            }
+        ];
+
+        function render(filterType) {
+            const grid = document.getElementById('grid');
+            grid.innerHTML = '';
+            
+            exercises.forEach(item => {
+                if(filterType !== 'all' && item.type !== filterType) return;
+
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.onclick = () => card.classList.toggle('completed');
+
+                card.innerHTML = `
+                    <div class="card-header">
+                        <div class="pulse-badge pulse-effect">${item.badge}</div>
+                        <div class="check-box"></div>
+                        <img src="${getPlaceholder(item.en, item.type)}" class="card-img" loading="lazy">
+                    </div>
+                    <div class="card-body">
+                        <div class="ex-title">${item.name}</div>
+                        <div class="ex-meta">
+                            ${item.equip} • ${item.reps}
+                        </div>
+                        <div class="bio-note">⚡ ${item.bio}</div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function filter(type, btn) {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            render(type);
+        }
+
+        // Init
+        render('all');
+
+    </script>
+</body>
+</html>

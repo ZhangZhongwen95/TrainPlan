@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>H-PROTOCOL: 极限大腿围度构建</title>
+    <style>
+        :root {
+            --bg: #050505;
+            --surface: #101010;
+            --fiber-red: #ff3333;   /* 肌纤维/机械张力 */
+            --plasma-blue: #00ccff; /* 肌浆/代谢压力 */
+            --venous-purple: #bb00ff; /* 血管化/泵感 */
+            --text-main: #f0f0f0;
+            --text-dim: #666;
+            --border: #222;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: 'Segoe UI', 'Roboto', sans-serif;
+            margin: 0;
+            padding-bottom: 80px;
+            line-height: 1.5;
+        }
+
+        /* 头部设计 */
+        header {
+            background: radial-gradient(circle at top, #1a0505 0%, var(--bg) 100%);
+            padding: 40px 20px;
+            border-bottom: 1px solid var(--border);
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            color: var(--fiber-red);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 0;
+            text-shadow: 0 0 20px rgba(255, 51, 51, 0.3);
+        }
+
+        .subtitle {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            margin-top: 10px;
+            font-family: monospace;
+            border: 1px solid #333;
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        /* 生物学原理面板 */
+        .bio-panel {
+            margin: 20px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border-left: 3px solid var(--fiber-red);
+            font-size: 0.85rem;
+            color: #ccc;
+        }
+        
+        .term { color: var(--plasma-blue); font-weight: bold; }
+
+        /* 筛选器 */
+        .control-deck {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 0 15px 20px;
+        }
+
+        .ctrl-btn {
+            background: #000;
+            border: 1px solid #333;
+            color: #888;
+            padding: 8px 16px;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .ctrl-btn.active { border-color: #fff; color: #fff; background: #1a1a1a; }
+        .ctrl-btn[data-type="tension"] { border-bottom: 2px solid var(--fiber-red); }
+        .ctrl-btn[data-type="metabolic"] { border-bottom: 2px solid var(--plasma-blue); }
+        .ctrl-btn[data-type="vascular"] { border-bottom: 2px solid var(--venous-purple); }
+
+        /* 动作列表 */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 15px;
+            padding: 15px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+            transition: transform 0.2s;
+        }
+
+        .card:hover { transform: scale(1.01); border-color: #444; }
+
+        .card-header {
+            height: 150px;
+            background: #000;
+            position: relative;
+            border-bottom: 1px solid #222;
+        }
+
+        .card-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.6;
+            filter: grayscale(1) contrast(1.2);
+            transition: 0.3s;
+        }
+        .card:hover .card-img { opacity: 0.9; filter: grayscale(0); }
+
+        .badge-stack {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .badge {
+            font-size: 0.6rem;
+            padding: 3px 6px;
+            background: #000;
+            color: #fff;
+            font-weight: bold;
+            text-transform: uppercase;
+            border-left: 3px solid;
+        }
+
+        .b-tension { border-color: var(--fiber-red); }
+        .b-metabolic { border-color: var(--plasma-blue); }
+        .b-vascular { border-color: var(--venous-purple); }
+
+        .card-body { padding: 15px; }
+
+        .ex-title {
+            font-size: 1rem;
+            font-weight: 900;
+            color: #fff;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+
+        .ex-meta {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            margin-bottom: 10px;
+            font-family: monospace;
+        }
+
+        .mechanism {
+            font-size: 0.75rem;
+            color: #bbb;
+            background: rgba(255,255,255,0.05);
+            padding: 8px;
+            border-radius: 4px;
+            line-height: 1.4;
+        }
+
+        /* 状态指示 */
+        .status-indicator {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            width: 12px;
+            height: 12px;
+            background: #222;
+            border-radius: 50%;
+            box-shadow: inset 0 0 5px #000;
+        }
+        .card.active .status-indicator {
+            background: #0f0;
+            box-shadow: 0 0 10px #0f0;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px;
+            border-top: 1px solid var(--border);
+            margin-top: 40px;
+            font-size: 0.7rem;
+            color: #444;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>H-Protocol</h1>
+        <div class="subtitle">MAXIMAL QUADRICEPS CROSS-SECTIONAL AREA (CSA) TRAINING</div>
+    </header>
+
+    <div class="bio-panel">
+        <strong>🧪 训练目标：哺乳动物骨骼肌极度肥大</strong><br>
+        本计划结合了<span class="term">IIb型快肌纤维</span>的机械破坏与<span class="term">肌浆流体</span>的超量补偿。
+        通过高阈值运动单位的募集，诱导肌原纤维蛋白合成（MPS）；同时通过静脉闭塞效应（Occlusion Effect），最大化细胞内水合作用，实现视觉上的“气球状”膨胀与血管网络扩张。
+    </div>
+
+    <div class="control-deck">
+        <button class="ctrl-btn active" onclick="filter('all', this)">全部序列 (30)</button>
+        <button class="ctrl-btn" data-type="tension" onclick="filter('tension', this)">机械张力 (纤维撕裂)</button>
+        <button class="ctrl-btn" data-type="metabolic" onclick="filter('metabolic', this)">代谢压力 (肌浆膨胀)</button>
+        <button class="ctrl-btn" data-type="vascular" onclick="filter('vascular', this)">血液流变 (爆血管)</button>
+    </div>
+
+    <div class="grid" id="grid">
+        <!-- Content injected by JS -->
+    </div>
+
+    <footer>
+        <p>LABORATORY FOR MYOFIBRILLAR HYPERTROPHY v9.0</p>
+        <p>Target: Vastus Lateralis / Medialis / Intermedius</p>
+    </footer>
+
+    <script>
+        // 占位图生成 (颜色对应类型)
+        function getPlaceholder(text, type) {
+            let color = '333';
+            if(type === 'tension') color = 'ff3333';
+            if(type === 'metabolic') color = '00ccff';
+            if(type === 'vascular') color = 'bb00ff';
+            const txt = text.replace(/ /g, '+');
+            return `https://placehold.co/600x350/0f0f0f/${color}?text=${txt}&font=roboto_condensed`;
+        }
+
+        const exercises = [
+            // --- 机械张力 (Mechanical Tension - Myofibrillar Hypertrophy) ---
+            // 目标：破坏肌小节，增加肌肉密度与粗度
+            {
+                name: "高杠位颈后深蹲",
+                en: "High Bar Squat",
+                type: "tension",
+                badge: "II型纤维募集",
+                load: "5 Sets x 5-8 Reps (85% 1RM)",
+                bio: "针对股四头肌的轴向加载。通过大负荷迫使高阈值运动单位放电，引发<span style='color:#ff3333'>肌原纤维撕裂</span>与重构。"
+            },
+            {
+                name: "哈克深蹲 (窄距)",
+                en: "Hack Squat Narrow",
+                type: "tension",
+                badge: "股外侧肌",
+                load: "4 Sets x 8-10 Reps",
+                bio: "固定脊柱轨迹，消除稳定肌限制，将机械应力完全集中在<span style='color:#ff3333'>股外侧肌</span>，增加大腿外翻维度。"
+            },
+            {
+                name: "前蹲 (Front Squat)",
+                en: "Front Squat",
+                type: "tension",
+                badge: "膝伸展力矩",
+                load: "4 Sets x 6-8 Reps",
+                bio: "垂直躯干最大化膝关节力矩。深度拉伸股四头肌，刺激<span style='color:#ff3333'>IGF-1</span>（胰岛素样生长因子）的局部释放。"
+            },
+            {
+                name: "45度腿举 (全幅度)",
+                en: "Full ROM Leg Press",
+                type: "tension",
+                badge: "超负荷加载",
+                load: "4 Sets x 8-12 Reps",
+                bio: "在无脊柱压力下加载超大重量。必须达到膝盖触胸的深度，以激活<span style='color:#ff3333'>肌节串联增加</span>（Sarcomere in series）。"
+            },
+            {
+                name: "单腿保加利亚分腿蹲",
+                en: "Bulgarian Split Squat",
+                type: "tension",
+                badge: "单侧超负荷",
+                load: "3 Sets x 8 Reps/Leg",
+                bio: "纠正双侧肌力不平衡。单腿承重迫使所有运动单位（Motor Units）同步激活。"
+            },
+            {
+                name: "史密斯垂直深蹲",
+                en: "Smith Vert Squat",
+                type: "tension",
+                badge: "孤立股四",
+                load: "3 Sets x 10 Reps",
+                bio: "脚前伸位。消除髋关节力矩，将张力完全锁定在股四头肌肌腹上。"
+            },
+            {
+                name: "直腿硬拉 (RDL)",
+                en: "RDL",
+                type: "tension",
+                badge: "腘绳肌拉伸",
+                load: "4 Sets x 8 Reps",
+                bio: "针对大腿后侧的离心破坏。在拉长位加载负荷，引发强烈的<span style='color:#ff3333'>延迟性肌肉酸痛 (DOMS)</span>。"
+            },
+            {
+                name: "负重箭步走",
+                en: "Walking Lunge",
+                type: "tension",
+                badge: "动态张力",
+                load: "3 Sets x 20 Steps",
+                bio: "动态单腿支撑，强化股四头肌与臀大肌的连接处（Tie-in）的肌肉分离度。"
+            },
+            {
+                name: "器械深蹲 (V-Squat)",
+                en: "V-Squat Machine",
+                type: "tension",
+                badge: "机械优势",
+                load: "4 Sets x 10 Reps",
+                bio: "利用器械轨迹，在离心阶段（下放）进行慢速控制，最大化机械损伤。"
+            },
+            {
+                name: "六角杠铃硬拉",
+                en: "Trap Bar Deadlift",
+                type: "tension",
+                badge: "股四/臀复合",
+                load: "4 Sets x 6 Reps",
+                bio: "相比传统硬拉更多膝屈曲，允许极大负荷刺激整个下肢动力链。"
+            },
+
+            // --- 代谢压力 (Metabolic Stress - Sarcoplasmic Hypertrophy) ---
+            // 目标：肌细胞肿胀，增加“气球感”
+            {
+                name: "坐姿腿屈伸 (递减组)",
+                en: "Leg Extension Drop",
+                type: "metabolic",
+                badge: "乳酸堆积",
+                load: "3 Sets x (15+15+15) Reps",
+                bio: "孤立股直肌。通过递减组引发<span style='color:#00ccff'>乳酸 (Lactate)</span> 剧烈堆积，触发各种合成代谢激素的释放。"
+            },
+            {
+                name: "西斯深蹲 (Sissy Squat)",
+                en: "Sissy Squat",
+                type: "metabolic",
+                badge: "筋膜拉伸",
+                load: "3 Sets x Failure",
+                bio: "在股直肌极度拉伸位进行收缩。旨在扩张<span style='color:#00ccff'>肌筋膜 (Fascia)</span> 空间，为肌肉生长创造物理空间。"
+            },
+            {
+                name: "俯卧腿弯举 (1.5次程)",
+                en: "Lying Leg Curl 1.5",
+                type: "metabolic",
+                badge: "缺氧训练",
+                load: "4 Sets x 15 Reps",
+                bio: "全程保持腘绳肌紧张。阻断血流，诱导细胞内<span style='color:#00ccff'>水合作用 (Hydration)</span>，使肌肉看起来饱满。"
+            },
+            {
+                name: "腿举 (窄距高次)",
+                en: "Leg Press High Rep",
+                type: "metabolic",
+                badge: "股外侧肌",
+                load: "3 Sets x 30-50 Reps",
+                bio: "极高次数训练耗尽糖原储备，并在恢复期引发<span style='color:#00ccff'>糖原超量补偿</span>，显著增加肌肉体积。"
+            },
+            {
+                name: "哥萨克深蹲",
+                en: "Cossack Squat",
+                type: "metabolic",
+                badge: "多平面肥大",
+                load: "3 Sets x 12/Side",
+                bio: "侧向拉伸刺激内收肌群（大腿内侧）。填补大腿内侧空隙，增加整体圆周度。"
+            },
+            {
+                name: "TUT高脚杯深蹲",
+                en: "TUT Goblet Squat",
+                type: "metabolic",
+                badge: "紧张时间",
+                load: "3 Sets x 60 Sec",
+                bio: "持续紧张时间 (Time Under Tension) 训练。全程不锁定膝盖，保持肌肉持续缺氧。"
+            },
+            {
+                name: "瑞士球靠墙深蹲",
+                en: "Wall Sit/Squat",
+                type: "metabolic",
+                badge: "静力衰竭",
+                load: "3 Sets x Failure",
+                bio: "等长收缩导致局部血流完全阻断，随后释放时产生极强的充血反应。"
+            },
+            {
+                name: "腿屈伸 (等长收缩)",
+                en: "Leg Ext ISO",
+                type: "metabolic",
+                badge: "顶峰收缩",
+                load: "3 Sets x 12 (3s Hold)",
+                bio: "在顶端锁死3秒。最大化股四头肌短缩位的代谢废物积累。"
+            },
+            {
+                name: "北欧腘绳肌弯举",
+                en: "Nordic Curl",
+                type: "metabolic",
+                badge: "离心超负荷",
+                load: "3 Sets x 8 Reps",
+                bio: "仅利用离心阶段。极强的机械与代谢双重刺激，主要针对腘绳肌增厚。"
+            },
+            {
+                name: "哑铃台阶上",
+                en: "Step Up",
+                type: "metabolic",
+                badge: "单侧充血",
+                load: "3 Sets x 15/Side",
+                bio: "持续不断的单腿登踏，迫使血液持续泵入单侧肢体。"
+            },
+
+            // --- 血液流变/血管化 (Vascularity - Angiogenesis) ---
+            // 目标：血管扩张，青筋暴起
+            {
+                name: "BFR限制血流深蹲",
+                en: "BFR Squat",
+                type: "vascular",
+                badge: "血管扩张",
+                load: "4 Sets x 30 Reps (轻重量)",
+                bio: "利用绑带限制静脉回流。极端的血液淤积迫使<span style='color:#bb00ff'>血管内皮生长因子 (VEGF)</span> 分泌，扩张毛细血管网。"
+            },
+            {
+                name: "超级组: 腿屈伸+腿弯举",
+                en: "Superset: Ext/Curl",
+                type: "vascular",
+                badge: "前后对抗",
+                load: "4 Sets x 20+20 Reps",
+                bio: "拮抗肌超级组。迫使血液在大腿前侧和后侧之间快速穿梭，极大提升血流速度。"
+            },
+            {
+                name: "100次空手深蹲",
+                en: "100 Air Squats",
+                type: "vascular",
+                badge: "毛细血管化",
+                load: "1 Set x 100 Reps",
+                bio: "作为收尾动作。持续的有氧/耐力刺激增加<span style='color:#bb00ff'>毛细血管密度 (Capillary Density)</span>。"
+            },
+            {
+                name: "行走箭步蹲 (无间歇)",
+                en: "Walking Lunge Burnout",
+                type: "vascular",
+                badge: "系统性充血",
+                load: "1 Set x 400 Meters",
+                bio: "长时间持续运动，产生巨大的剪切力（Shear Stress），刺激一氧化氮合酶（NOS），扩张血管。"
+            },
+            {
+                name: "雪橇车推行 (Sled Push)",
+                en: "Sled Push",
+                type: "vascular",
+                badge: "无离心泵感",
+                load: "5 Sets x 30m",
+                bio: "没有离心损伤的纯向心运动，允许在不破坏肌肉的情况下注入最大血流量。"
+            },
+            {
+                name: "跳箱 (连续)",
+                en: "Continuous Box Jump",
+                type: "vascular",
+                badge: "反应性充血",
+                load: "3 Sets x 20 Reps",
+                bio: "利用肌肉泵（Muscle Pump）效应，通过快速收缩将血液强行压入周边组织。"
+            },
+            {
+                name: "自行车冲刺 (高阻力)",
+                en: "Bike Sprint",
+                type: "vascular",
+                badge: "终极泵感",
+                load: "30 Sec All Out",
+                bio: "全力冲刺。迫使心输出量最大化，将含氧血液强行压入极度膨胀的肌组织。"
+            },
+            {
+                name: "坐姿小腿提踵",
+                en: "Seated Calf Raise",
+                type: "vascular",
+                badge: "静脉回流",
+                load: "4 Sets x 25 Reps",
+                bio: "虽然是小腿，但作为静脉泵，它加速下肢整体血液循环，强化大腿血管显现。"
+            },
+            {
+                name: "站姿单腿屈伸",
+                en: "Standing Leg Curl",
+                type: "vascular",
+                badge: "细节刻画",
+                load: "3 Sets x 20 Reps",
+                bio: "针对腘绳肌的小肌头进行高次刺激，增加局部的血管纹理。"
+            },
+            {
+                name: "内收肌夹腿 (高次)",
+                en: "Adductor Burn",
+                type: "vascular",
+                badge: "内侧充血",
+                load: "3 Sets x 30 Reps",
+                bio: "高次数刺激大腿内侧，使其充血膨胀，迫使大腿看起来更粗壮并在内侧显露血管。"
+            }
+        ];
+
+        function render(filterType) {
+            const grid = document.getElementById('grid');
+            grid.innerHTML = '';
+            
+            exercises.forEach(item => {
+                if(filterType !== 'all' && item.type !== filterType) return;
+
+                let borderClass = 'b-tension';
+                if(item.type === 'metabolic') borderClass = 'b-metabolic';
+                if(item.type === 'vascular') borderClass = 'b-vascular';
+
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.onclick = function() { this.classList.toggle('active'); };
+
+                card.innerHTML = `
+                    <div class="card-header">
+                        <div class="badge-stack">
+                            <span class="badge ${borderClass}">${item.badge}</span>
+                            <span class="badge" style="border-color:#fff">${item.load}</span>
+                        </div>
+                        <img src="${getPlaceholder(item.en, item.type)}" class="card-img" loading="lazy">
+                    </div>
+                    <div class="card-body">
+                        <div class="ex-title">${item.name}</div>
+                        <div class="ex-meta">Protocol: ${item.type.toUpperCase()}</div>
+                        <div class="mechanism">${item.bio}</div>
+                    </div>
+                    <div class="status-indicator"></div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function filter(type, btn) {
+            document.querySelectorAll('.ctrl-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            render(type);
+        }
+
+        // Init
+        render('all');
+
+    </script>
+</body>
+</html>

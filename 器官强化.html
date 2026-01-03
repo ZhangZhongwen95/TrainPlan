@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NVM-C: 神经血管耦合训练系统</title>
+    <style>
+        :root {
+            --bg: #050608;
+            --panel: #0f1116;
+            --neural-blue: #00f0ff;   /* 神经信号 */
+            --vascular-red: #ff2a2a; /* 血液灌注 */
+            --muscular-gold: #ffcc00; /* 肌纤维收缩 */
+            --text-main: #e6e6e6;
+            --text-sub: #8b9bb4;
+            --border: #232d3d;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: 'Rajdhani', 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding-bottom: 60px;
+            line-height: 1.5;
+        }
+
+        /* 实验室风格头部 */
+        header {
+            background: linear-gradient(180deg, #0a0c10 0%, var(--bg) 100%);
+            padding: 30px 20px;
+            border-bottom: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 背景装饰网格 */
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: 
+                linear-gradient(var(--border) 1px, transparent 1px),
+                linear-gradient(90deg, var(--border) 1px, transparent 1px);
+            background-size: 20px 20px;
+            opacity: 0.1;
+            z-index: 0;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            color: var(--neural-blue);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .subtitle {
+            font-size: 0.75rem;
+            color: var(--text-sub);
+            margin-top: 8px;
+            font-family: monospace;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 科学原理矩阵 */
+        .matrix-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .matrix-box {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            padding: 15px;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .matrix-title { font-size: 0.7rem; font-weight: bold; text-transform: uppercase; display: block; margin-bottom: 5px; }
+        .matrix-val { font-size: 0.6rem; color: var(--text-sub); }
+
+        .c-neural { color: var(--neural-blue); border-color: rgba(0, 240, 255, 0.3); }
+        .c-vascular { color: var(--vascular-red); border-color: rgba(255, 42, 42, 0.3); }
+        .c-muscular { color: var(--muscular-gold); border-color: rgba(255, 204, 0, 0.3); }
+
+        /* 筛选控制台 */
+        .console-bar {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            padding: 0 15px 20px;
+            flex-wrap: wrap;
+        }
+
+        .console-btn {
+            background: #0a0a0a;
+            border: 1px solid #333;
+            color: #666;
+            padding: 8px 16px;
+            border-radius: 2px;
+            font-family: monospace;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+
+        .console-btn:hover { border-color: #fff; color: #fff; }
+
+        .console-btn.active.btn-neural { background: rgba(0, 240, 255, 0.1); border-color: var(--neural-blue); color: var(--neural-blue); }
+        .console-btn.active.btn-vascular { background: rgba(255, 42, 42, 0.1); border-color: var(--vascular-red); color: var(--vascular-red); }
+        .console-btn.active.btn-muscular { background: rgba(255, 204, 0, 0.1); border-color: var(--muscular-gold); color: var(--muscular-gold); }
+        .console-btn.active.btn-all { background: #fff; color: #000; border-color: #fff; }
+
+        /* 动作列表 */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 15px;
+            padding: 15px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: var(--panel);
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            position: relative;
+            transition: transform 0.2s;
+        }
+
+        .card:hover { transform: translateY(-2px); border-color: #555; }
+
+        .card-header {
+            height: 140px;
+            background: #000;
+            position: relative;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .card-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.7;
+            filter: contrast(1.2) grayscale(0.5);
+        }
+
+        .status-light {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #333;
+            box-shadow: 0 0 5px #000;
+        }
+        
+        .card.active .status-light { background: #0f0; box-shadow: 0 0 8px #0f0; }
+
+        .card-body { padding: 15px; }
+
+        .ex-code {
+            font-family: monospace;
+            font-size: 0.65rem;
+            color: var(--text-sub);
+            margin-bottom: 4px;
+        }
+
+        .ex-name {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: #aaa;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding-bottom: 8px;
+            margin-bottom: 8px;
+        }
+
+        .mechanism-box {
+            font-size: 0.75rem;
+            color: var(--text-sub);
+            background: rgba(0,0,0,0.3);
+            padding: 8px;
+            border-left: 2px solid #555;
+            line-height: 1.4;
+        }
+
+        /* 动态边框颜色 */
+        .type-neural { border-left: 3px solid var(--neural-blue); }
+        .type-vascular { border-left: 3px solid var(--vascular-red); }
+        .type-muscular { border-left: 3px solid var(--muscular-gold); }
+
+        .type-neural .mechanism-box { border-color: var(--neural-blue); color: #aee; }
+        .type-vascular .mechanism-box { border-color: var(--vascular-red); color: #eaa; }
+        .type-muscular .mechanism-box { border-color: var(--muscular-gold); color: #eea; }
+
+        footer {
+            text-align: center;
+            padding: 30px;
+            font-family: monospace;
+            font-size: 0.6rem;
+            color: #444;
+            border-top: 1px solid #1a1a1a;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>NVM-C Protocol</h1>
+        <div class="subtitle">
+            Neuro-Vascular-Muscular Coupling Optimization<br>
+            灵长类骨盆动力学与感觉神经阈值调控系统
+        </div>
+    </header>
+
+    <div class="matrix-container">
+        <div class="matrix-box c-neural">
+            <span class="matrix-title">Neural Input</span>
+            <span class="matrix-val">Afferent Nerve Signal +</span>
+        </div>
+        <div class="matrix-box c-vascular">
+            <span class="matrix-title">Hemodynamics</span>
+            <span class="matrix-val">Nitric Oxide (NO) Flow +</span>
+        </div>
+        <div class="matrix-box c-muscular">
+            <span class="matrix-title">Myotonia</span>
+            <span class="matrix-val">Fast-Twitch Spasm +</span>
+        </div>
+    </div>
+
+    <div class="console-bar">
+        <button class="console-btn btn-all active" onclick="filter('all', this)">[ALL] 综合序列</button>
+        <button class="console-btn btn-neural" onclick="filter('type-neural', this)">[NEU] 神经电位</button>
+        <button class="console-btn btn-vascular" onclick="filter('type-vascular', this)">[VAS] 血液灌注</button>
+        <button class="console-btn btn-muscular" onclick="filter('type-muscular', this)">[MUS] 肌纤维强直</button>
+    </div>
+
+    <div class="grid" id="grid">
+        <!-- System Generating... -->
+    </div>
+
+    <footer>
+        <p>LABORATORY FOR PRIMATE KINETICS v4.2</p>
+        <p>Target: Sacral Plexus Activation & Pelvic Floor Hypertrophy</p>
+    </footer>
+
+    <script>
+        // 科学占位图生成
+        function getPlaceholder(text, type) {
+            let color = '444444';
+            if(type === 'type-neural') color = '00f0ff';
+            if(type === 'type-vascular') color = 'ff2a2a';
+            if(type === 'type-muscular') color = 'ffcc00';
+            const txt = text.replace(/ /g, '+');
+            return `https://placehold.co/600x300/0a0a0a/${color}?text=${txt}&font=roboto_mono`;
+        }
+
+        const protocol = [
+            // --- NEURAL (神经敏感度与信号转导) ---
+            // 目标：降低机械感受器阈值，强化骶神经丛传导
+            {
+                code: "NEU-001",
+                name: "高频臀桥脉冲 (10cm)",
+                en: "HF Glute Pulse",
+                type: "type-neural",
+                equip: "弹力带",
+                reps: "4 Sets x 45 Sec",
+                bio: "通过高频微距震荡（Micro-Oscillation），持续激活帕西尼小体（Pacinian Corpuscles），阻止神经适应。"
+            },
+            {
+                name: "瑞士球微幅弹动",
+                en: "Swiss Ball Bounce",
+                type: "type-neural",
+                equip: "瑞士球",
+                reps: "3 Sets x 60 Sec",
+                bio: "利用不稳定平面进行垂直向震荡，刺激本体感受器，强化骶骨区域的神经连接。"
+            },
+            {
+                name: "蝴蝶式震荡 (Butterfly)",
+                en: "Butterfly Pulse",
+                type: "type-neural",
+                equip: "徒手",
+                reps: "3 Sets x 50 Reps",
+                bio: "在髋外展位进行快速小幅度开合，刺激闭孔神经支配区域的敏感度。"
+            },
+            {
+                name: "弹力带外展颤动",
+                en: "Banded Abduction Flutter",
+                type: "type-neural",
+                equip: "弹力带",
+                reps: "4 Sets x 30 Sec",
+                bio: "维持外展张力下的高频颤动，诱发运动单位的同步放电（Synchronization）。"
+            },
+            {
+                name: "快速台阶交替",
+                en: "Speed Step-Ups",
+                type: "type-neural",
+                equip: "台阶/箱子",
+                reps: "3 Sets x 45 Sec",
+                bio: "提高下肢与骨盆的神经肌肉募集速度，激活IIb型快肌纤维。"
+            },
+            {
+                name: "跳箱 (Box Jump)",
+                en: "Box Jump",
+                type: "type-neural",
+                equip: "跳箱",
+                reps: "4 Sets x 6 Reps",
+                bio: "爆发性动作激活中枢神经系统（CNS），提升骨盆底的瞬时反应能力。"
+            },
+            {
+                name: "壶铃高频摆动",
+                en: "Speed KB Swing",
+                type: "type-neural",
+                equip: "轻壶铃",
+                reps: "4 Sets x 20 Reps",
+                bio: "强调动作底部的快速伸展反射（Stretch Reflex），训练神经系统的回弹机制。"
+            },
+            {
+                name: "俯卧登山者 (冲刺)",
+                en: "Sprint Climber",
+                type: "type-neural",
+                equip: "徒手",
+                reps: "4 Sets x 30 Sec",
+                bio: "交感神经激活训练。通过极速交替运动，模拟高唤醒状态下的神经传导。"
+            },
+            {
+                name: "单腿震荡硬拉",
+                en: "Oscillatory RDL",
+                type: "type-neural",
+                equip: "壶铃",
+                reps: "3 Sets x 15 Reps",
+                bio: "在中段行程进行小幅度快速震荡，增加肌梭（Muscle Spindle）的反馈信号。"
+            },
+            {
+                name: "敏捷梯步法",
+                en: "Ladder Drills",
+                type: "type-neural",
+                equip: "敏捷梯",
+                reps: "4 Sets x 30 Sec",
+                bio: "全身协调性与神经反应速度训练，保持中枢神经的高兴奋度。"
+            },
+
+            // --- VASCULAR (血液动力学与灌注) ---
+            // 目标：最大化骨盆充血（Hyperemia）与一氧化氮合成
+            {
+                code: "VAS-101",
+                name: "相扑硬拉 (高容量)",
+                en: "Sumo Deadlift High Vol",
+                type: "type-vascular",
+                equip: "杠铃",
+                reps: "4 Sets x 15 Reps",
+                bio: "宽距站位拉动髂内动脉血流。高容量训练诱导剪切力，促进血管舒张（Vasodilation）。"
+            },
+            {
+                name: "高脚杯深蹲 (底部停顿)",
+                en: "Pause Goblet Squat",
+                type: "type-vascular",
+                equip: "哑铃",
+                reps: "3 Sets x 12 Reps",
+                bio: "在最大拉伸位停顿，制造缺血-再灌注（Ischemia-Reperfusion）效应，冲刷微循环。"
+            },
+            {
+                name: "坐姿器械夹腿 (超级组)",
+                en: "Adductor Superset",
+                type: "type-vascular",
+                equip: "夹腿机",
+                reps: "5 Sets x 20 Reps",
+                bio: "内收肌与盆底血管网高度关联。泵感训练（The Pump）迫使血液进入深层组织。"
+            },
+            {
+                name: "腿举 (宽距)",
+                en: "Wide Leg Press",
+                type: "type-vascular",
+                equip: "倒蹬机",
+                reps: "4 Sets x 20 Reps",
+                bio: "利用大肌群的代谢需求，通过侧支循环增加骨盆底的血流量。"
+            },
+            {
+                name: "哥萨克深蹲",
+                en: "Cossack Squat",
+                type: "type-vascular",
+                equip: "徒手",
+                reps: "3 Sets x 10/Side",
+                bio: "动态拉伸内收肌群，改善腹股沟淋巴与静脉回流，消除淤积。"
+            },
+            {
+                name: "滑盘侧向箭步蹲",
+                en: "Slider Lateral Lunge",
+                type: "type-vascular",
+                equip: "滑盘",
+                reps: "3 Sets x 15 Reps",
+                bio: "离心控制下的持续张力，维持局部高血压状态，促进毛细血管开放。"
+            },
+            {
+                name: "步行箭步蹲",
+                en: "Walking Lunge",
+                type: "type-vascular",
+                equip: "哑铃",
+                reps: "3 Sets x 30 Meters",
+                bio: "全身性血液动力冲击，利用肌肉泵（Muscle Pump）效应加速静脉回流。"
+            },
+            {
+                name: "坐姿腿屈伸 (高次)",
+                en: "Leg Extension 100",
+                type: "type-vascular",
+                equip: "器械",
+                reps: "2 Sets x 50 Reps",
+                bio: "极限充血训练。通过代谢产物堆积（乳酸/氢离子）触发强烈的局部血管扩张反应。"
+            },
+            {
+                name: "臀推 (持续张力)",
+                en: "Constant Tension Thrust",
+                type: "type-vascular",
+                equip: "杠铃",
+                reps: "4 Sets x 15 Reps",
+                bio: "动作全程不锁定，保持肌肉持续收缩，阻断血流后释放，产生反应性充血。"
+            },
+            {
+                name: "瑜伽球夹腿",
+                en: "Swiss Ball Squeeze",
+                type: "type-vascular",
+                equip: "瑜伽球",
+                reps: "4 Sets x 60 Sec",
+                bio: "等长收缩（Isometric）限制血流，随后放松引爆一氧化氮释放。"
+            },
+
+            // --- MUSCULAR (强直收缩与协同) ---
+            // 目标：肌纤维强直（Tetanus）与盆底协同控制
+            {
+                code: "MUS-202",
+                name: "凯格尔深蹲",
+                en: "Kegel Squat",
+                type: "type-muscular",
+                equip: "徒手",
+                reps: "4 Sets x 12 Reps",
+                bio: "神经-肌肉协同训练。起立时主动激活耻骨尾骨肌（PC肌），建立随意控制连接。"
+            },
+            {
+                name: "真空腹 (Vacuum)",
+                en: "Stomach Vacuum",
+                type: "type-muscular",
+                equip: "徒手",
+                reps: "5 Sets x 30 Sec",
+                bio: "强化腹横肌（TVA），增加腹内压（IAP），为骨盆底提供机械性支撑。"
+            },
+            {
+                name: "死虫式 (Dead Bug)",
+                en: "Dead Bug",
+                type: "type-muscular",
+                equip: "徒手",
+                reps: "3 Sets x 15 Reps",
+                bio: "在四肢动态中锁定骨盆核心，训练深层稳定肌的无意识收缩能力。"
+            },
+            {
+                name: "RKC平板支撑",
+                en: "RKC Plank",
+                type: "type-muscular",
+                equip: "徒手",
+                reps: "3 Sets x 45 Sec",
+                bio: "全身最大张力收缩（Maximal Tension），迫使盆底肌参与核心稳定机制。"
+            },
+            {
+                name: "早安式 (Good Morning)",
+                en: "Good Morning",
+                type: "type-muscular",
+                equip: "杠铃",
+                reps: "3 Sets x 10 Reps",
+                bio: "强化后链刚性，优化脊柱-骨盆的力学传导效率。"
+            },
+            {
+                name: "绳索胯下穿透",
+                en: "Cable Pull Through",
+                type: "type-muscular",
+                equip: "龙门架",
+                reps: "4 Sets x 12 Reps",
+                bio: "对抗向后的牵引力，训练盆底肌与臀肌在离心阶段的协同制动能力。"
+            },
+            {
+                name: "龙门架伐木工",
+                en: "Woodchopper",
+                type: "type-muscular",
+                equip: "龙门架",
+                reps: "3 Sets x 12/Side",
+                bio: "螺旋线筋膜链训练。通过腹斜肌收缩带动骨盆底的协同反应。"
+            },
+            {
+                name: "坐姿器械外展 (控制)",
+                en: "Abductor Control",
+                type: "type-muscular",
+                equip: "外展机",
+                reps: "3 Sets x 15 Reps",
+                bio: "强化臀中肌，稳定骨盆侧向，为盆底肌提供稳定的附着环境。"
+            },
+            {
+                name: "反向卷腹",
+                en: "Reverse Crunch",
+                type: "type-muscular",
+                equip: "瑜伽垫",
+                reps: "3 Sets x 15 Reps",
+                bio: "由下腹部主导的骨盆后倾，直接训练连接耻骨的肌纤维束。"
+            },
+            {
+                name: "单腿臀桥保持",
+                en: "Single Leg Hold",
+                type: "type-muscular",
+                equip: "徒手",
+                reps: "3 Sets x 45 Sec",
+                bio: "非对称抗旋训练。迫使深层小肌群进行微调，提升精细控制力。"
+            }
+        ];
+
+        function render(filterType) {
+            const grid = document.getElementById('grid');
+            grid.innerHTML = '';
+            
+            protocol.forEach(item => {
+                if(filterType !== 'all' && item.type !== filterType) return;
+
+                const card = document.createElement('div');
+                card.className = `card ${item.type}`;
+                // Click interaction
+                card.onclick = function() {
+                    this.classList.toggle('active');
+                }
+
+                card.innerHTML = `
+                    <div class="card-header">
+                        <div class="status-light"></div>
+                        <img src="${getPlaceholder(item.en, item.type)}" class="card-img" loading="lazy">
+                    </div>
+                    <div class="card-body">
+                        <div class="ex-code">:: ${item.code || 'SYS-GEN'} ::</div>
+                        <div class="ex-name">${item.name}</div>
+                        <div class="data-row">
+                            <span>APPARATUS: ${item.equip}</span>
+                            <span>LOAD: ${item.reps}</span>
+                        </div>
+                        <div class="mechanism-box">
+                            <strong>[BIO-MECHANICS]:</strong> ${item.bio}
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function filter(type, btn) {
+            document.querySelectorAll('.console-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            render(type);
+        }
+
+        // Init
+        render('all');
+
+    </script>
+</body>
+</html>

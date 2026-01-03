@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>HIIT 核心 & 髋部爆发力训练</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --primary: #3b82f6;
+            --accent: #f59e0b;
+            --text: #f8fafc;
+            --success: #22c55e;
+        }
+
+        body {
+            font-family: -apple-system, system-ui, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            padding-bottom: 100px;
+        }
+
+        /* 顶部计时器区域 */
+        .timer-header {
+            position: sticky;
+            top: 0;
+            background: var(--bg);
+            padding: 15px;
+            text-align: center;
+            border-bottom: 2px solid var(--primary);
+            z-index: 100;
+        }
+
+        #timer-display {
+            font-size: 3rem;
+            font-weight: 800;
+            font-variant-numeric: tabular-nums;
+            color: var(--accent);
+        }
+
+        .timer-controls button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            margin: 5px;
+            font-weight: bold;
+        }
+
+        /* 训练内容卡片 */
+        .container {
+            padding: 15px;
+        }
+
+        .wave-label {
+            background: var(--primary);
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-bottom: 10px;
+        }
+
+        .exercise-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .exercise-card h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.2rem;
+            color: var(--primary);
+        }
+
+        .guide-text {
+            font-size: 0.9rem;
+            color: #94a3b8;
+            margin-bottom: 15px;
+        }
+
+        /* 计次系统 */
+        .log-section {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .log-section input {
+            background: #334155;
+            border: 1px solid #475569;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            width: 80px;
+            text-align: center;
+        }
+
+        .save-btn {
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            flex-grow: 1;
+        }
+
+        /* 图像占位 */
+        .img-placeholder {
+            width: 100%;
+            height: 180px;
+            background: #334155;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background: var(--card-bg);
+            padding: 15px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="timer-header">
+    <div id="status-label">准备开始</div>
+    <div id="timer-display">00:40</div>
+    <div class="timer-controls">
+        <button onclick="startWorkout()">开始计时</button>
+        <button onclick="resetTimer()" style="background:#475569;">重置</button>
+    </div>
+</div>
+
+<div class="container">
+    
+    <div class="wave-label">第一阶段：波浪式激活</div>
+    
+    <div class="exercise-card">
+        <h3>1. 动力俯卧登山者</h3>
+        <div class="img-placeholder">[此处放入动态登山者GIF]</div>
+        
+        <div class="guide-text">
+            • 核心锁死，背部平直。<br>
+            • 双腿像短跑般快速交替。
+        </div>
+        <div class="log-section">
+            <input type="number" placeholder="次数" id="ex1-reps">
+            <button class="save-btn" onclick="saveData('登山者', 'ex1-reps')">记录此组</button>
+        </div>
+    </div>
+
+    <div class="wave-label">第二阶段：高强度推送</div>
+
+    <div class="exercise-card" style="border-left-color: var(--accent);">
+        <h3>2. 俯卧蛙式跳跃 (Plank Froggers)</h3>
+        <div class="img-placeholder">[此处放入蛙式跳跃GIF]</div>
+        
+        <div class="guide-text">
+            • 强调髋关节的爆发性向后踢出。<br>
+            • 骨盆回弹时保持核心刚性。
+        </div>
+        <div class="log-section">
+            <input type="number" placeholder="次数" id="ex2-reps">
+            <button class="save-btn" onclick="saveData('蛙式跳跃', 'ex2-reps')">记录此组</button>
+        </div>
+    </div>
+
+    <div class="exercise-card" style="border-left-color: var(--accent);">
+        <h3>3. 爆发力 Sprawl (推送变体)</h3>
+        <div class="img-placeholder">[此处放入Sprawl动图]</div>
+        <div class="guide-text">
+            • 站立下蹲，双脚爆发性踢至平板姿势。<br>
+            • 模拟髋关节瞬间向后的推力。
+        </div>
+        <div class="log-section">
+            <input type="number" placeholder="次数" id="ex3-reps">
+            <button class="save-btn" onclick="saveData('Sprawl', 'ex3-reps')">记录此组</button>
+        </div>
+    </div>
+
+    <div class="wave-label">第三阶段：静态+动态复合</div>
+
+    <div class="exercise-card" style="border-left-color: var(--success);">
+        <h3>4. 侧向登山者 (外斜肌强化)</h3>
+        <div class="img-placeholder">[此处放入侧向登山者图]</div>
+        
+        <div class="guide-text">
+            • 膝盖向对侧肘部靠近。<br>
+            • 强化俯卧位时的旋转稳定性。
+        </div>
+        <div class="log-section">
+            <input type="number" placeholder="次数" id="ex4-reps">
+            <button class="save-btn" onclick="saveData('侧向登山者', 'ex4-reps')">记录此组</button>
+        </div>
+    </div>
+
+</div>
+
+<footer>
+    <div id="history-log" style="font-size: 0.8rem; color: #94a3b8;">暂无本日记录</div>
+</footer>
+
+<script>
+    let timeLeft = 40;
+    let timerId = null;
+    let isWorking = true;
+
+    function startWorkout() {
+        if (timerId) return;
+        timerId = setInterval(() => {
+            timeLeft--;
+            if (timeLeft <= 0) {
+                isWorking = !isWorking;
+                timeLeft = isWorking ? 40 : 20; // 40秒训练，20秒休息
+                document.getElementById('status-label').innerText = isWorking ? "🔥 训练中！" : "🔔 休息中";
+                document.getElementById('status-label').style.color = isWorking ? "#ef4444" : "#22c55e";
+                window.navigator.vibrate(200); // 休息提醒
+            }
+            updateDisplay();
+        }, 1000);
+    }
+
+    function resetTimer() {
+        clearInterval(timerId);
+        timerId = null;
+        timeLeft = 40;
+        isWorking = true;
+        updateDisplay();
+    }
+
+    function updateDisplay() {
+        let m = Math.floor(timeLeft / 60);
+        let s = timeLeft % 60;
+        document.getElementById('timer-display').innerText = 
+            `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    }
+
+    function saveData(name, inputId) {
+        const val = document.getElementById(inputId).value;
+        if (!val) return;
+        const history = document.getElementById('history-log');
+        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        history.innerHTML = `最后记录: ${time} - ${name} ${val}次 | ${history.innerHTML.split('|')[0]}`;
+        alert(name + " 记录成功！");
+    }
+</script>
+
+</body>
+</html>

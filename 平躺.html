@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>S-OVP: 仰卧位髋部动能震荡系统</title>
+    <style>
+        :root {
+            --bg: #0a0a12;
+            --card: #14141e;
+            --primary: #4cc9f0; /* 神经传导蓝 */
+            --secondary: #7209b7; /* 肌肥大紫 */
+            --accent: #f72585; /* 爆发红 */
+            --text: #e0e0e0;
+            --text-dim: #888;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Roboto', 'Segoe UI', sans-serif;
+            margin: 0;
+            padding-bottom: 60px;
+        }
+
+        header {
+            background: linear-gradient(135deg, #101018 0%, #1a1a2e 100%);
+            padding: 30px 20px;
+            border-bottom: 2px solid var(--secondary);
+            text-align: center;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .subtitle {
+            margin-top: 10px;
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* 理论板块 */
+        .theory-box {
+            background: rgba(76, 201, 240, 0.05);
+            border: 1px solid var(--primary);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        /* 过滤器 */
+        .filter-nav {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            scrollbar-width: none;
+        }
+
+        .filter-btn {
+            background: var(--card);
+            color: var(--text-dim);
+            border: 1px solid #333;
+            padding: 8px 16px;
+            border-radius: 20px;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 0.8rem;
+        }
+
+        .filter-btn.active {
+            background: var(--primary);
+            color: #000;
+            font-weight: bold;
+            border-color: var(--primary);
+        }
+
+        /* 动作网格 */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #222;
+            transition: transform 0.2s;
+            position: relative;
+        }
+
+        .card:hover { transform: translateY(-5px); border-color: var(--primary); }
+
+        .card-img-wrap {
+            height: 180px;
+            background: #000;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.8;
+        }
+
+        .badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            color: #000;
+            z-index: 2;
+        }
+
+        .bg-strength { background: var(--secondary); color: #fff; } /* 基础力量 */
+        .bg-speed { background: var(--accent); color: #fff; } /* 神经震荡 */
+        .bg-control { background: var(--primary); color: #000; } /* 盆底控制 */
+
+        .card-body { padding: 15px; }
+
+        .ex-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+
+        .ex-meta {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            margin-bottom: 10px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .bio-note {
+            font-size: 0.8rem;
+            color: var(--primary);
+            background: rgba(76, 201, 240, 0.1);
+            padding: 8px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            border-left: 3px solid var(--primary);
+        }
+
+        .desc {
+            font-size: 0.85rem;
+            color: #aaa;
+            line-height: 1.4;
+        }
+
+        /* 交互 */
+        .status-dot {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            cursor: pointer;
+            z-index: 2;
+        }
+        .card.done .status-dot { background: var(--primary); border-color: var(--primary); }
+        .card.done { opacity: 0.6; }
+
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            font-size: 0.8rem;
+            color: #555;
+            border-top: 1px solid #222;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>S-OVP Protocol</h1>
+        <div class="subtitle">仰卧位髋部微距动能震荡 & 核心流体控制系统</div>
+    </header>
+
+    <div class="container">
+        <div class="theory-box">
+            <strong>⚙️ 生物力学机制 (Biomechanics):</strong><br>
+            平躺状态下的高频微距摆动（Micro-Oscillation）需要克服重力进行爆发性髋伸展，并利用核心肌群进行极速回弹。
+            本计划通过<strong>30个复合动作</strong>，建立“臀部引擎（伸展）- 腹部刹车（屈曲）- 盆底稳态（内压）”的三位一体闭环，激活IIb型快肌纤维，实现10cm范围内的高频震荡。
+        </div>
+
+        <div class="filter-nav">
+            <button class="filter-btn active" onclick="filter('all')">全部动作 (30)</button>
+            <button class="filter-btn" onclick="filter('strength')">动力引擎 (臀/腘)</button>
+            <button class="filter-btn" onclick="filter('speed')">神经震荡 (快肌)</button>
+            <button class="filter-btn" onclick="filter('control')">深层控制 (盆底)</button>
+        </div>
+
+        <div class="grid" id="grid">
+            <!-- JS 渲染 -->
+        </div>
+    </div>
+
+    <footer>
+        <p>S-OVP: Supine-Oscillation & Pelvic Velocity Protocol v2.0</p>
+        <p>Professional Sports Science Integration</p>
+    </footer>
+
+    <script>
+        // 动态占位图生成器
+        function getPlaceholder(text, type) {
+            let color = '4cc9f0';
+            if(type === 'strength') color = '7209b7';
+            if(type === 'speed') color = 'f72585';
+            const txt = text.replace(/ /g, '+');
+            return `https://placehold.co/600x350/14141e/${color}?text=${txt}&font=roboto`;
+        }
+
+        const data = [
+            // --- 动力引擎 (Strength & Hypertrophy) ---
+            // 基础：建立仰卧位向上顶髋的绝对力量
+            {
+                name: "杠铃重型臀推",
+                en: "Heavy Hip Thrust",
+                type: "strength",
+                badge: "核心动力",
+                equip: "杠铃/长凳",
+                reps: "5组 x 6-8次",
+                bio: "仰卧位髋伸展的黄金动作。在短缩位（顶峰）建立对抗重力的最大扭矩。",
+                desc: "背部靠凳，将杠铃置于髋部，爆发性上顶，顶峰挤压1秒。"
+            },
+            {
+                name: "地板负重臀桥",
+                en: "Weighted Floor Bridge",
+                type: "strength",
+                badge: "基础构建",
+                equip: "哑铃/杠铃片",
+                reps: "4组 x 10-12次",
+                bio: "直接模拟平躺发力模式。强化腰椎稳定前提下的骨盆运动。",
+                desc: "平躺地面，重物置于耻骨上方，仅用臀部力量将骨盆推离地面。"
+            },
+            {
+                name: "罗马尼亚硬拉",
+                en: "RDL",
+                type: "strength",
+                badge: "后链离心",
+                equip: "杠铃",
+                reps: "4组 x 8-10次",
+                bio: "强化腘绳肌与臀部的神经连接，为快速回拉提供弹性势能。",
+                desc: "膝盖微屈，臀部向后推，感受大腿后侧强烈拉伸。"
+            },
+            {
+                name: "相扑硬拉",
+                en: "Sumo Deadlift",
+                type: "strength",
+                badge: "内收协同",
+                equip: "杠铃",
+                reps: "3组 x 5-8次",
+                bio: "宽距站位深度激活大收肌，它在髋伸展中起关键辅助作用。",
+                desc: "宽站距，双手窄握，利用臀腿力量蹬地拉起。"
+            },
+            {
+                name: "史密斯架反向箭步蹲",
+                en: "Smith Reverse Lunge",
+                type: "strength",
+                badge: "单侧稳定",
+                equip: "史密斯机",
+                reps: "3组 x 10次/侧",
+                bio: "解决左右肌力不平衡，确保震荡轨迹不发生侧向偏移。",
+                desc: "保持上半身垂直，后腿膝盖轻触地后立即蹬起。"
+            },
+            {
+                name: "45度蹬腿",
+                en: "Leg Press",
+                type: "strength",
+                badge: "大负荷",
+                equip: "蹬腿机",
+                reps: "4组 x 10次 (高足位)",
+                bio: "高足位聚焦臀大肌与腘绳肌，在安全环境下加载超大负荷。",
+                desc: "双脚置于踏板高处，下放至大腿贴腹，用力蹬出。"
+            },
+            {
+                name: "坐姿腿弯举",
+                en: "Seated Leg Curl",
+                type: "strength",
+                badge: "腘绳肌肥大",
+                equip: "器械",
+                reps: "3组 x 12次",
+                bio: "强壮的腘绳肌是防止在高频摆动中抽筋的关键。",
+                desc: "顶峰用力收缩，慢速离心释放。"
+            },
+            {
+                name: "杠铃深蹲",
+                en: "Barbell Squat",
+                type: "strength",
+                badge: "全身张力",
+                equip: "杠铃",
+                reps: "3组 x 8次",
+                bio: "提升核心整体刚性（Stiffness）与腹内压控制能力。",
+                desc: "全幅度下蹲，保持脊柱中立。"
+            },
+            {
+                name: "早安式",
+                en: "Good Morning",
+                type: "strength",
+                badge: "后链张力",
+                equip: "杠铃",
+                reps: "3组 x 10次",
+                bio: "强化竖脊肌的等长收缩，确保力量不被腰椎代偿。",
+                desc: "背部挺直，仅通过髋关节折叠完成动作。"
+            },
+            {
+                name: "单腿罗马尼亚硬拉",
+                en: "Single Leg RDL",
+                type: "strength",
+                badge: "精细控制",
+                equip: "壶铃",
+                reps: "3组 x 10次/侧",
+                bio: "提升髋关节的本体感觉与微小肌群的稳定能力。",
+                desc: "保持骨盆水平，控制身体平衡。"
+            },
+
+            // --- 神经震荡 (Speed & Twitch) ---
+            // 关键：在10cm微距内的高频爆发
+            {
+                name: "弹力带臀桥脉冲",
+                en: "Banded Bridge Pulse",
+                type: "speed",
+                badge: "微距震荡",
+                equip: "弹力带/哑铃",
+                reps: "4组 x 30秒 (极速)",
+                bio: "专项模拟动作。在顶端张力最大处进行10cm高频震荡，激活快肌。",
+                desc: "保持臀部不触地，在最高点进行快速、短促的上下抽动。"
+            },
+            {
+                name: "壶铃摆动",
+                en: "Kettlebell Swing",
+                type: "speed",
+                badge: "爆发伸展",
+                equip: "壶铃",
+                reps: "4组 x 20次",
+                bio: "训练髋部类似弹簧的爆发力与快速制动能力。",
+                desc: "利用髋部爆发力将壶铃弹起，强调臀部收缩速度。"
+            },
+            {
+                name: "瑞士球腘绳肌快速勾腿",
+                en: "Swiss Ball Ham Curl",
+                type: "speed",
+                badge: "动态回拉",
+                equip: "瑞士球",
+                reps: "3组 x 15次",
+                bio: "训练腘绳肌在不稳定平面上的快速收缩，模拟震荡中的回拉。",
+                desc: "仰卧，脚跟置于球上，快速将球勾向臀部。"
+            },
+            {
+                name: "绳索胯下前冲",
+                en: "Cable Pull Through",
+                type: "speed",
+                badge: "水平向量",
+                equip: "龙门架",
+                reps: "4组 x 15次",
+                bio: "提供持续向后的牵引力，迫使臀肌主动对抗并快速锁定。",
+                desc: "背对龙门架，绳索从胯下穿过，快速挺髋锁定。"
+            },
+            {
+                name: "仰卧交替踢腿",
+                en: "Flutter Kicks",
+                type: "speed",
+                badge: "核心制动",
+                equip: "徒手",
+                reps: "4组 x 30秒",
+                bio: "在髋屈伸运动中保持骨盆绝对稳定，强化下腹控制。",
+                desc: "平躺，下背压死地面，双腿小幅度快速上下交替。"
+            },
+            {
+                name: "药球仰卧砸球",
+                en: "Partner Ball Drop",
+                type: "speed",
+                badge: "腹部爆发",
+                equip: "药球",
+                reps: "3组 x 15次",
+                bio: "模拟震荡中的“回弹”阶段，训练腹直肌的快速反应。",
+                desc: "仰卧，快速接住并反弹上方落下的药球（或对墙投掷）。"
+            },
+            {
+                name: "登山者",
+                en: "Mountain Climber",
+                type: "speed",
+                badge: "高频屈髋",
+                equip: "徒手",
+                reps: "4组 x 30秒 (冲刺)",
+                bio: "极高频率的髋屈动作，训练髋腰肌群的收缩速度。",
+                desc: "俯卧撑位，膝盖像活塞一样极速交替冲击胸口。"
+            },
+            {
+                name: "跳箱/深蹲跳",
+                en: "Box Jump",
+                type: "speed",
+                badge: "II型肌纤维",
+                equip: "跳箱",
+                reps: "4组 x 6次",
+                bio: "激活全身快肌纤维，提升神经系统的信号发射频率。",
+                desc: "轻落地，注重起跳瞬间的髋部爆发。"
+            },
+            {
+                name: "仰卧单腿爆发顶髋",
+                en: "Explosive 1-Leg Bridge",
+                type: "speed",
+                badge: "单侧爆发",
+                equip: "徒手",
+                reps: "3组 x 10次/侧",
+                bio: "训练单侧臀肌的爆发启动速度，消除发力延迟。",
+                desc: "单腿支撑，另一腿悬空，爆发性将臀部顶离地面。"
+            },
+            {
+                name: "战绳 (半蹲姿)",
+                en: "Battle Ropes",
+                type: "speed",
+                badge: "全身协同",
+                equip: "战绳",
+                reps: "3组 x 30秒",
+                bio: "在半蹲位锁定骨盆，通过上肢极速运动迫使核心进行抗旋稳定。",
+                desc: "半蹲，骨盆纹丝不动，双臂极速挥动战绳。"
+            },
+
+            // --- 深层控制 (Control & Pelvic Floor) ---
+            // 关键：强大的盆底肌与内收肌，防止动作松散，增加紧致感
+            {
+                name: "坐姿器械夹腿",
+                en: "Adductor Machine",
+                type: "control",
+                badge: "盆底肥大",
+                equip: "夹腿机",
+                reps: "4组 x 15-20次",
+                bio: "大收肌与盆底肌（PC肌）存在神经协同。强力夹腿直接刺激盆底肥大。",
+                desc: "顶峰用力夹紧2秒，感受大腿根部深处的收缩。"
+            },
+            {
+                name: "高脚杯深蹲 (凯格尔式)",
+                en: "Kegel Goblet Squat",
+                type: "control",
+                badge: "动态控制",
+                equip: "哑铃",
+                reps: "3组 x 12次",
+                bio: "在深蹲过程中整合盆底肌训练。站起时主动收缩PC肌。",
+                desc: "下蹲时放松，起立时用力提肛（想象中断排尿）。"
+            },
+            {
+                name: "真空腹",
+                en: "Stomach Vacuum",
+                type: "control",
+                badge: "深层腹横肌",
+                equip: "徒手",
+                reps: "4组 x 30秒",
+                bio: "强化腹横肌，如同天然腰带般压缩腹腔，增加震荡时的内压。",
+                desc: "四点支撑或仰卧，呼气排空，用力将肚皮吸向脊柱。"
+            },
+            {
+                name: "死虫式",
+                en: "Dead Bug",
+                type: "control",
+                badge: "骨盆锁死",
+                equip: "徒手",
+                reps: "3组 x 12次/侧",
+                bio: "训练在动态四肢干扰下，保持骨盆与腰椎绝对稳定的能力。",
+                desc: "仰卧，对侧手脚下放，腰部用力压死地面，不留缝隙。"
+            },
+            {
+                name: "悬挂举腿",
+                en: "Hanging Leg Raise",
+                type: "control",
+                badge: "骨盆后倾",
+                equip: "单杠",
+                reps: "3组 x 12次",
+                bio: "强化下腹部，这是控制骨盆快速后倾（Posterior Tilt）的关键。",
+                desc: "利用骨盆卷动带动双腿抬起，避免惯性摆动。"
+            },
+            {
+                name: "侧平板支撑",
+                en: "Side Plank",
+                type: "control",
+                badge: "侧向稳定",
+                equip: "徒手",
+                reps: "3组 x 45秒/侧",
+                bio: "强化腹斜肌与腰方肌，防止震荡中出现侧向能量泄漏。",
+                desc: "身体呈一条直线，髋部推离地面。"
+            },
+            {
+                name: "帕洛夫推举",
+                en: "Pallof Press",
+                type: "control",
+                badge: "抗旋转",
+                equip: "龙门架",
+                reps: "3组 x 12次",
+                bio: "核心抗旋转经典动作。提升核心整体刚性。",
+                desc: "侧对龙门架，双手将绳索推至胸前伸直并保持抵抗。"
+            },
+            {
+                name: "下斜卷腹",
+                en: "Decline Crunch",
+                type: "control",
+                badge: "腹直肌肥大",
+                equip: "下斜凳",
+                reps: "3组 x 15次",
+                bio: "增加腹直肌块状体积，提升前侧“刹车”系统的力量。",
+                desc: "全程控制，脊柱逐节卷起。"
+            },
+            {
+                name: "坐姿器械外展",
+                en: "Abductor Machine",
+                type: "control",
+                badge: "臀中肌",
+                equip: "外展机",
+                reps: "3组 x 15次",
+                bio: "强化臀中肌，稳定髋关节侧向，辅助盆底肌控制。",
+                desc: "身体微前倾，用力向外推开。"
+            },
+            {
+                name: "反向卷腹",
+                en: "Reverse Crunch",
+                type: "control",
+                badge: "微距卷动",
+                equip: "瑜伽垫",
+                reps: "3组 x 15次",
+                bio: "专注于骨盆离开地面的微小位移，模拟仰卧震荡的幅度。",
+                desc: "仅利用下腹力量卷起骨盆，不要甩腿。"
+            }
+        ];
+
+        function render(filterType) {
+            const grid = document.getElementById('grid');
+            grid.innerHTML = '';
+            
+            data.forEach((item, index) => {
+                if(filterType !== 'all' && item.type !== filterType) return;
+
+                const bgClass = item.type === 'strength' ? 'bg-strength' : 
+                                item.type === 'speed' ? 'bg-speed' : 'bg-control';
+                
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.onclick = () => card.classList.toggle('done');
+                
+                card.innerHTML = `
+                    <div class="card-img-wrap">
+                        <span class="badge ${bgClass}">${item.badge}</span>
+                        <div class="status-dot"></div>
+                        <img src="${getPlaceholder(item.en, item.type)}" class="card-img" loading="lazy">
+                    </div>
+                    <div class="card-body">
+                        <div class="ex-title">${index + 1}. ${item.name}</div>
+                        <div class="ex-meta">
+                            <span>${item.equip}</span>
+                            <span>|</span>
+                            <span>${item.reps}</span>
+                        </div>
+                        <div class="bio-note">⚡ ${item.bio}</div>
+                        <div class="desc">${item.desc}</div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function filter(type) {
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            render(type);
+        }
+
+        // Init
+        render('all');
+
+    </script>
+</body>
+</html>

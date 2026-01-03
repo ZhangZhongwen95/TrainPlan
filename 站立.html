@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ATLAS-OSC: 站立前置负重震荡系统</title>
+    <style>
+        :root {
+            --bg: #050505;
+            --surface: #121212;
+            --primary: #ff6b00; /* 负重警示橙 */
+            --secondary: #00d4ff; /* 神经传导蓝 */
+            --accent: #6a00ff; /* 深层控制紫 */
+            --text-main: #ffffff;
+            --text-muted: #888888;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: 'Oswald', 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding-bottom: 80px;
+            line-height: 1.4;
+        }
+
+        /* 顶部 */
+        header {
+            background: linear-gradient(180deg, #1a1a1a 0%, var(--bg) 100%);
+            padding: 40px 20px;
+            border-bottom: 2px solid #333;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin: 0;
+            background: linear-gradient(90deg, var(--primary), #ff9e00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            margin-top: 10px;
+            font-weight: 300;
+        }
+
+        /* 核心原理 */
+        .bio-box {
+            background: rgba(255, 107, 0, 0.05);
+            border: 1px solid var(--primary);
+            margin: 20px auto;
+            max-width: 1000px;
+            padding: 20px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: #ddd;
+        }
+
+        /* 导航栏 */
+        .nav-scroller {
+            display: flex;
+            gap: 12px;
+            padding: 10px 20px;
+            overflow-x: auto;
+            margin-bottom: 20px;
+            scrollbar-width: none;
+            justify-content: center;
+        }
+
+        .filter-btn {
+            background: var(--surface);
+            border: 1px solid #444;
+            color: var(--text-muted);
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .filter-btn.active {
+            background: var(--primary);
+            color: #000;
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(255, 107, 0, 0.4);
+        }
+
+        /* 网格布局 */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        /* 卡片设计 */
+        .card {
+            background: var(--surface);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #222;
+            transition: transform 0.2s;
+            position: relative;
+        }
+
+        .card:hover { transform: translateY(-5px); border-color: var(--primary); }
+
+        .card-header {
+            height: 160px;
+            background: #000;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.7;
+            transition: opacity 0.3s;
+        }
+        .card:hover .card-img { opacity: 1; }
+
+        .type-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 4px 10px;
+            font-size: 0.7rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            color: #fff;
+            border-radius: 4px;
+            z-index: 2;
+        }
+
+        .bg-zercher { background: var(--primary); color: #000; } /* 泽奇承重 */
+        .bg-power { background: var(--secondary); color: #000; } /* 震荡动力 */
+        .bg-control { background: var(--accent); color: #fff; } /* 盆底刹车 */
+
+        .card-body { padding: 20px; }
+
+        .ex-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        .ex-meta {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .icon { font-family: 'Segoe UI Emoji'; }
+
+        .bio-note {
+            background: #1a1a1a;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            color: #ccc;
+            border-left: 3px solid #555;
+            margin-bottom: 10px;
+        }
+
+        .bio-note strong { color: var(--primary); }
+
+        .check-circle {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.5);
+            cursor: pointer;
+            z-index: 5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+        .card.done .check-circle {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+        .card.done .check-circle::after { content: '✓'; color: #000; font-weight: bold; }
+        .card.done { opacity: 0.5; filter: grayscale(0.8); }
+
+        footer {
+            text-align: center;
+            padding: 40px;
+            border-top: 1px solid #222;
+            margin-top: 40px;
+            color: #444;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>ATLAS-OSC Protocol</h1>
+        <div class="subtitle">站立位前置负重（泽奇式）动能震荡系统</div>
+    </header>
+
+    <div class="container">
+        <div class="bio-box">
+            <strong>⚙️ 极限负重生物力学 (Load Biomechanics):</strong><br>
+            要实现臂弯抱持60kg负重下的高频摆动，必须建立<strong>“阿特拉斯级”的前侧核心支撑</strong>。
+            训练核心在于<strong>泽奇氏（Zercher）体系</strong>，强化上背部与核心在极度前倾力矩下的抗屈曲能力。
+            同时，利用臀大肌的微幅爆发力（Pulse）作为动力源，盆底肌作为瞬时制动器，实现“稳如泰山，动如马达”的控制力。
+        </div>
+
+        <div class="nav-scroller">
+            <button class="filter-btn active" onclick="filter('all')">全部动作 (30)</button>
+            <button class="filter-btn" onclick="filter('zercher')">泽奇负重 (抗屈曲)</button>
+            <button class="filter-btn" onclick="filter('power')">震荡动力 (臀驱动)</button>
+            <button class="filter-btn" onclick="filter('control')">制动刹车 (盆底)</button>
+        </div>
+
+        <div class="grid" id="grid">
+            <!-- Content Injected via JS -->
+        </div>
+    </div>
+
+    <footer>
+        <p>ATLAS-OSC SYSTEM v4.0</p>
+        <p>Standing Anterior Load & Pelvic Velocity Integration</p>
+    </footer>
+
+    <script>
+        // 动态占位图
+        function getPlaceholder(text, type) {
+            let color = 'ff6b00';
+            if(type === 'power') color = '00d4ff';
+            if(type === 'control') color = '6a00ff';
+            const txt = text.replace(/ /g, '+');
+            return `https://placehold.co/600x400/121212/${color}?text=${txt}&font=roboto`;
+        }
+
+        const exercises = [
+            // --- 泽奇负重与抗屈曲 (Zercher & Anti-Flexion) ---
+            // 目标：让身体习惯前置60kg的巨大拉力，保持脊柱不弯曲
+            {
+                name: "泽奇深蹲",
+                en: "Zercher Squat",
+                type: "zercher",
+                badge: "负重核心",
+                equip: "杠铃",
+                reps: "5组 x 5次 (大重量)",
+                bio: "专项王牌动作。将杠铃置于肘窝，最大化模拟抱人姿态。强化上背部与核心的极限刚性。",
+                desc: "肘窝夹住杠铃，双手互握，保持背部垂直下蹲，对抗身体前倾趋势。"
+            },
+            {
+                name: "泽奇行走",
+                en: "Zercher Carry",
+                type: "zercher",
+                badge: "动态稳定",
+                equip: "杠铃/沙袋",
+                reps: "4组 x 30米",
+                bio: "在移动中维持前置负重的稳定性，训练核心的动态抗屈曲能力。",
+                desc: "抱住重物，收紧核心，小步快速行走，保持骨盆不晃动。"
+            },
+            {
+                name: "泽奇早安式",
+                en: "Zercher Good Morning",
+                type: "zercher",
+                badge: "后链强化",
+                equip: "杠铃",
+                reps: "3组 x 8-10次",
+                bio: "强化竖脊肌在负重前置状态下的等长收缩能力，防止被重量“拉弯”。",
+                desc: "肘抱杠铃，保持背部挺直，仅通过髋部折叠前倾身体。"
+            },
+            {
+                name: "沙袋熊抱深蹲",
+                en: "Sandbag Bear Hug Squat",
+                type: "zercher",
+                badge: "模拟实战",
+                equip: "重沙袋",
+                reps: "4组 x 10次",
+                bio: "沙袋的不规则重心完美模拟人体负重，强化全方位的核心包裹力。",
+                desc: "用力勒紧沙袋贴胸，深度下蹲。"
+            },
+            {
+                name: "前蹲 (Front Squat)",
+                en: "Front Squat",
+                type: "zercher",
+                badge: "躯干垂直",
+                equip: "杠铃",
+                reps: "4组 x 6-8次",
+                bio: "训练在垂直脊柱姿态下的下肢发力，减少腰椎剪切力。",
+                desc: "杠铃架在三角肌前束，肘部抬高，保持躯干直立。"
+            },
+            {
+                name: "站立推举",
+                en: "Overhead Press",
+                type: "zercher",
+                badge: "腹内压",
+                equip: "杠铃",
+                reps: "4组 x 8次",
+                bio: "建立极强的腹内压（IAP）以保护脊柱，这是负重站立的基础。",
+                desc: "核心收紧，臀部夹紧，将杠铃推过头顶，身体不后仰。"
+            },
+            {
+                name: "农夫行走",
+                en: "Farmers Walk",
+                type: "zercher",
+                badge: "斜方肌/握力",
+                equip: "重哑铃",
+                reps: "4组 x 40米",
+                bio: "强化斜方肌和整体姿态控制，防止在高频震荡中肩膀垮塌。",
+                desc: "双手提重物，沉肩，挺胸快速行走。"
+            },
+            {
+                name: "泽奇静力支撑",
+                en: "Zercher Hold",
+                type: "zercher",
+                badge: "等长耐力",
+                equip: "杠铃",
+                reps: "3组 x 45秒",
+                bio: "让身体适应60kg压在手臂上的痛感与压力，建立心理耐受力。",
+                desc: "从深蹲架起杠，保持站立姿态，核心对抗前倾力矩。"
+            },
+            {
+                name: "高脚杯深蹲",
+                en: "Goblet Squat",
+                type: "zercher",
+                badge: "胸椎伸展",
+                equip: "重哑铃",
+                reps: "3组 x 12次",
+                bio: "强化胸椎伸展肌群，防止含胸驼背。",
+                desc: "双手托住哑铃贴胸，保持挺胸姿态下蹲。"
+            },
+            {
+                name: "杠铃划船",
+                en: "Barbell Row",
+                type: "zercher",
+                badge: "上背锁定",
+                equip: "杠铃",
+                reps: "4组 x 8-10次",
+                bio: "强壮的菱形肌和背阔肌有助于将负重“锁”在身体重心附近。",
+                desc: "俯身45度，将杠铃拉向小腹，收紧肩胛骨。"
+            },
+
+            // --- 震荡动力 (Power & Speed) ---
+            // 目标：在站立负重状态下，仅靠髋部进行10cm的极速活塞运动
+            {
+                name: "弹力带站姿顶髋",
+                en: "Standing Band Hip Thrust",
+                type: "power",
+                badge: "水平震荡",
+                equip: "弹力带/龙门架",
+                reps: "5组 x 20次 (极速)",
+                bio: "模拟站立位的前后摆动。弹力带提供水平向后的阻力，迫使臀肌爆发向前。",
+                desc: "背对锚点，弹力带系于髋部，进行短促、快速的前顶动作。"
+            },
+            {
+                name: "壶铃摆动",
+                en: "Kettlebell Swing",
+                type: "power",
+                badge: "爆发/回弹",
+                equip: "壶铃",
+                reps: "4组 x 20次",
+                bio: "训练髋关节的“弹簧效应”。重点在于利用臀部爆发力而非手臂。",
+                desc: "利用髋部铰链，爆发性将壶铃向前弹出。"
+            },
+            {
+                name: "绳索胯下穿透",
+                en: "Cable Pull Through",
+                type: "power",
+                badge: "全程张力",
+                equip: "龙门架",
+                reps: "4组 x 15次",
+                bio: "龙门架提供持续的向后拉力，训练臀大肌在对抗阻力下的微距控制。",
+                desc: "背对机器，快速挺髋锁定，慢速回放。"
+            },
+            {
+                name: "史密斯架顶髋",
+                en: "Smith Machine Hip Thrust",
+                type: "power",
+                badge: "稳定爆发",
+                equip: "史密斯机",
+                reps: "4组 x 10次 (大重量)",
+                bio: "建立臀大肌的绝对力量底座，确保推动60kg负重时不疲软。",
+                desc: "仰卧，在锁定轨迹下推起大重量。"
+            },
+            {
+                name: "站姿臀肌夹紧 (负重)",
+                en: "Standing Glute Squeeze",
+                type: "power",
+                badge: "微距脉冲",
+                equip: "手持哑铃",
+                reps: "4组 x 30秒",
+                bio: "在直立状态下，仅通过收缩臀肌产生骨盆前推的微动（10cm）。",
+                desc: "手持重物，保持膝盖微屈，进行高频的骨盆前后抽动。"
+            },
+            {
+                name: "立定跳远",
+                en: "Broad Jump",
+                type: "power",
+                badge: "水平爆发",
+                equip: "徒手",
+                reps: "3组 x 6次",
+                bio: "激活全身快肌纤维，强化水平方向的推进力。",
+                desc: "全力向前跳跃，强调髋部伸展速度。"
+            },
+            {
+                name: "弹力带早安式 (速度)",
+                en: "Speed Band Good Morning",
+                type: "power",
+                badge: "快速离心",
+                equip: "弹力带",
+                reps: "3组 x 20次",
+                bio: "训练腘绳肌的快速拉伸与回缩能力（Stretch-Shortening Cycle）。",
+                desc: "踩住弹力带挂颈，快速俯身并快速弹起。"
+            },
+            {
+                name: "反向哈克深蹲",
+                en: "Reverse Hack Squat",
+                type: "power",
+                badge: "闭链驱动",
+                equip: "哈克机",
+                reps: "3组 x 10次",
+                bio: "在固定轨迹下，安全地训练后链的推力。",
+                desc: "面朝机器，用力向后伸髋。"
+            },
+            {
+                name: "雪橇车推行",
+                en: "Sled Push",
+                type: "power",
+                badge: "水平驱动",
+                equip: "雪橇车",
+                reps: "4组 x 20米 (冲刺)",
+                bio: "模拟对抗前方阻力的推进模式，强化下肢蹬伸。",
+                desc: "手臂伸直，低位爆发性推动雪橇。"
+            },
+            {
+                name: "半蹲跳 (Pulse Jump)",
+                en: "Squat Pulse Jump",
+                type: "power",
+                badge: "短程爆发",
+                equip: "徒手",
+                reps: "3组 x 15次",
+                bio: "在半蹲位（机械优势位置）进行小幅度的爆发性跳跃。",
+                desc: "保持半蹲，进行快速、连续的小跳。"
+            },
+
+            // --- 制动与盆底控制 (Control & Braking) ---
+            // 目标：在快速震荡中瞬间锁死位置，防止身体随负重晃动
+            {
+                name: "坐姿器械夹腿",
+                en: "Adductor Machine",
+                type: "control",
+                badge: "底座稳定",
+                equip: "夹腿机",
+                reps: "4组 x 15-20次",
+                bio: "强化大收肌与盆底肌，为骨盆震荡提供稳固的“底座”。",
+                desc: "用力夹紧，顶峰收缩2秒。"
+            },
+            {
+                name: "RKC平板支撑",
+                en: "RKC Plank",
+                type: "control",
+                badge: "极限张力",
+                equip: "徒手",
+                reps: "3组 x 45秒",
+                bio: "主动收缩全身肌肉，建立核心钢板般的刚性。",
+                desc: "握拳，脚尖蹬地，收紧臀部，制造全身最大张力。"
+            },
+            {
+                name: "帕洛夫推举",
+                en: "Pallof Press",
+                type: "control",
+                badge: "抗旋转",
+                equip: "龙门架",
+                reps: "3组 x 12次",
+                bio: "防止在负重震荡时出现侧向偏移，锁定脊柱中立位。",
+                desc: "侧对拉力器，双手推出绳索并保持对抗。"
+            },
+            {
+                name: "悬挂举腿",
+                en: "Hanging Leg Raise",
+                type: "control",
+                badge: "骨盆后倾",
+                equip: "单杠",
+                reps: "3组 x 12次",
+                bio: "强化下腹部，这是负责快速“回拉”（骨盆后倾）的关键刹车肌群。",
+                desc: "利用骨盆卷动抬腿，避免惯性。"
+            },
+            {
+                name: "健腹轮滚出",
+                en: "Ab Wheel Rollout",
+                type: "control",
+                badge: "抗伸展",
+                equip: "健腹轮",
+                reps: "3组 x 10次",
+                bio: "防止在顶髋时腰椎过度反弓，保护脊柱。",
+                desc: "膝姿，控制核心向前滚动，用腹部力量拉回。"
+            },
+            {
+                name: "真空腹",
+                en: "Stomach Vacuum",
+                type: "control",
+                badge: "TVA激活",
+                equip: "徒手",
+                reps: "4组 x 30秒",
+                bio: "强化腹横肌，增加腹内压，像液压系统一样支撑负重。",
+                desc: "呼气排空，用力将肚皮吸向脊柱。"
+            },
+            {
+                name: "凯格尔深蹲",
+                en: "Kegel Squat",
+                type: "control",
+                badge: "盆底整合",
+                equip: "徒手",
+                reps: "3组 x 15次",
+                bio: "在站立承重模式下，主动激活盆底肌。",
+                desc: "站起时用力收缩PC肌（提肛）。"
+            },
+            {
+                name: "绳索伐木工",
+                en: "Cable Woodchopper",
+                type: "control",
+                badge: "斜向控制",
+                equip: "龙门架",
+                reps: "3组 x 12次/侧",
+                bio: "强化腹斜肌，连接上下半身的力量传导。",
+                desc: "保持手臂伸直，利用躯干转动拉动绳索。"
+            },
+            {
+                name: "箱式深蹲",
+                en: "Box Squat",
+                type: "control",
+                badge: "髋部复位",
+                equip: "杠铃/箱子",
+                reps: "3组 x 8次",
+                bio: "训练在特定角度下打破惯性、静止启动的能力。",
+                desc: "坐上箱子完全卸力，然后爆发性站起。"
+            },
+            {
+                name: "负重卷腹",
+                en: "Weighted Crunch",
+                type: "control",
+                badge: "前侧刹车",
+                equip: "龙门架/杠铃片",
+                reps: "3组 x 15次",
+                bio: "增加腹直肌块头，提供更强力的前侧制动力。",
+                desc: "负重进行卷腹，专注腹肌收缩。"
+            }
+        ];
+
+        function render(filterType) {
+            const grid = document.getElementById('grid');
+            grid.innerHTML = '';
+            
+            exercises.forEach(item => {
+                if(filterType !== 'all' && item.type !== filterType) return;
+
+                let bgClass = 'bg-zercher';
+                if(item.type === 'power') bgClass = 'bg-power';
+                if(item.type === 'control') bgClass = 'bg-control';
+
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.onclick = () => card.classList.toggle('done');
+
+                card.innerHTML = `
+                    <div class="card-header">
+                        <span class="type-badge ${bgClass}">${item.badge}</span>
+                        <div class="check-circle"></div>
+                        <img src="${getPlaceholder(item.en, item.type)}" class="card-img" loading="lazy">
+                    </div>
+                    <div class="card-body">
+                        <div class="ex-title">${item.name}</div>
+                        <div class="ex-meta">
+                            <span class="icon">🏋️</span> ${item.equip} 
+                            <span style="margin:0 8px">|</span> 
+                            <span class="icon">🔁</span> ${item.reps}
+                        </div>
+                        <div class="bio-note"><strong>⚡ 原理：</strong>${item.bio}</div>
+                        <div style="font-size:0.85rem; color:#aaa; line-height:1.4;">${item.desc}</div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function filter(type) {
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            render(type);
+        }
+
+        // Init
+        render('all');
+
+    </script>
+</body>
+</html>
